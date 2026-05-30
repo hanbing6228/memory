@@ -33,10 +33,11 @@ export async function createSessionToken(user: SessionUser) {
 }
 
 export async function setSessionCookie(token: string) {
+  const crossOrigin = process.env.ALLOW_CROSS_ORIGIN === "true";
   cookies().set(COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: crossOrigin ? "none" : "lax",
     path: "/",
     maxAge: MAX_AGE,
   });

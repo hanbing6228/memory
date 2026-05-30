@@ -2,7 +2,7 @@
  * API client — syncs with Next.js backend when deployed on VPS
  */
 window.MemorialApi = {
-  base: "",
+  base: (window.MEMORIAL_CONFIG && window.MEMORIAL_CONFIG.apiBase) || "",
 
   async request(path, options = {}) {
     const res = await fetch(this.base + path, {

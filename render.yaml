@@ -1,0 +1,25 @@
+databases:
+  - name: nianguichu-db
+    plan: free
+    databaseName: memorial
+    user: memorial
+
+services:
+  - type: web
+    name: nianguichu
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npx prisma migrate deploy && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/integrations/status
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nianguichu-db
+          property: connectionString
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
