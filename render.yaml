@@ -12,7 +12,9 @@ services:
     runtime: node
     plan: free
     region: singapore
-    buildCommand: NPM_CONFIG_PRODUCTION=false npm ci && npm run build && npm run seed
+    # Build runs without DB access on Render; migrate/seed run in preDeployCommand instead.
+    buildCommand: NPM_CONFIG_PRODUCTION=false npm ci && npx prisma generate && npx next build
+    preDeployCommand: npx prisma migrate deploy && npm run seed
     startCommand: npm start
     healthCheckPath: /api/integrations/status
     envVars:
