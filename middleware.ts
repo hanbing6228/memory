@@ -16,6 +16,16 @@ function corsHeaders(origin: string | null) {
 }
 
 export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (pathname === "/") {
+    return NextResponse.rewrite(new URL("/index.html", request.url));
+  }
+
+  if (!pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
   const origin = request.headers.get("origin");
   const headers = corsHeaders(origin);
 
@@ -36,5 +46,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: "/api/:path*",
+  matcher: ["/", "/api/:path*"],
 };

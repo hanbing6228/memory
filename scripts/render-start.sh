@@ -14,5 +14,5 @@ until npx prisma migrate deploy; do
   attempt=$((attempt + 1))
 done
 
-npm run seed
+npx tsx scripts/ensure-seed.ts
 exec npm start

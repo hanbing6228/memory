@@ -1,9 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async rewrites() {
-    return [
-      { source: "/", destination: "/index.html" },
-    ];
+    return {
+      // Run before App Router — otherwise / 404s without app/page.tsx
+      beforeFiles: [{ source: "/", destination: "/index.html" }],
+    };
   },
   async headers() {
     return [
