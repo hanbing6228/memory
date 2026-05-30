@@ -9,7 +9,8 @@ services:
     name: nianguichu
     runtime: node
     plan: free
-    buildCommand: npm ci && npx prisma migrate deploy && npm run build
+    region: singapore
+    buildCommand: npm ci && npm run build && npm run seed
     startCommand: npm start
     healthCheckPath: /api/integrations/status
     envVars:
@@ -19,7 +20,5 @@ services:
           property: connectionString
       - key: AUTH_SECRET
         generateValue: true
-      - key: NODE_ENV
-        value: production
       - key: NEXT_PUBLIC_APP_URL
         sync: false
