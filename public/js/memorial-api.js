@@ -15,7 +15,9 @@ window.MemorialApi = {
     });
     const json = await res.json().catch(() => ({}));
     if (!res.ok || !json.ok) {
-      throw new Error(json.error || res.statusText || "请求失败");
+      const err = new Error(json.error || res.statusText || "请求失败");
+      err.status = res.status;
+      throw err;
     }
     return json.data;
   },
@@ -26,6 +28,30 @@ window.MemorialApi = {
     } catch {
       return null;
     }
+  },
+
+  async me() {
+    return this.request("/api/auth/me");
+  },
+
+  async login({ email, password }) {
+    return this.request("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+  },
+
+  async logout() {
+    return this.request("/api/auth/logout", { method: "POST" });
+  },
+
+  async listMemorials() {
+    return this.request("/api/memorials");
+  },
+
+  async searchMemorials(q) {
+    const params = new URLSearchParams({ q });
+    return this.request("/api/memorials/search?" + params.toString());
   },
 
   async getMemorial(slug) {

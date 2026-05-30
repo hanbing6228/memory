@@ -3,7 +3,9 @@ window.MemorialCore = {
   slug: MemorialStore.DEFAULT_SLUG,
   pendingRitualType: "蜡烛",
   useApi: false,
+  canEdit: false,
   _schedule: null,
+  _needsLogin: false,
 
   async init() {
     this.applyWelcomeCopy();
@@ -12,22 +14,59 @@ window.MemorialCore = {
       const status = await MemorialApi.health();
       this.useApi = !!(status && status.database);
     }
-    if (this.useApi) await this.hydrateFromApi();
-    const m = MemorialStore.get(this.slug);
-    if (m) {
-      this.applyQuietMode(m.quietMode);
-      this.renderPrivacyBar(m);
-      this.renderAnniversaryTab(m);
-      this.renderMemoryTab(m);
-      this.renderCoMemorialTab(m);
-      this.syncTributeCounts(m);
+    if (window.MemorialAuth) {
+      await MemorialAuth.init(this.useApi);
     }
+    if (this.useApi) await this.hydrateFromApi();
+    this.refreshMemorialUI();
+  },
+
+  async onAuthChanged() {
+    this._needsLogin = false;
+    if (this.useApi) await this.hydrateFromApi();
+    this.refreshMemorialUI();
+  },
+
+  refreshMemorialUI() {
+    const m = MemorialStore.get(this.slug);
+    if (!m) return;
+    this.applyQuietMode(m.quietMode);
+    this.renderPrivacyBar(m);
+    this.renderAnniversaryTab(m);
+    this.renderMemoryTab(m);
+    this.renderCoMemorialTab(m);
+    this.syncTributeCounts(m);
+    this.renderApiBanner();
+  },
+
+  renderApiBanner() {
+    const page = this.getMemorialPage();
+    if (!page) return;
+    let banner = page.querySelector(".memorial-api-banner");
+    if (!this.useApi || !this._needsLogin) {
+      banner?.remove();
+      return;
+    }
+    if (!banner) {
+      banner = document.createElement("div");
+      banner.className = "memorial-api-banner";
+      const hero = page.querySelector(".profile-hero");
+      if (hero) hero.after(banner);
+      else page.prepend(banner);
+    }
+    banner.innerHTML = `
+      <p>此纪念馆仅家人可见。请登录后参与追思与共创。</p>
+      <button type="button" class="submit-btn" onclick="MemorialAuth.demoLogin()">演示登录</button>
+      <button type="button" class="nav-auth-btn" onclick="MemorialAuth.open('login')">登录 / 注册</button>
+    `;
   },
 
   async hydrateFromApi() {
     try {
       const data = await MemorialApi.getMemorial(this.slug);
       const mem = data.memorial;
+      this.canEdit = !!mem.canEdit;
+      this._needsLogin = false;
       this._schedule = data.schedule;
       MemorialStore.update(this.slug, {
         name: mem.name,
@@ -56,23 +95,22 @@ window.MemorialCore = {
         reminders: (mem.reminders || []).map((r) => ({ email: r.email, at: r.at })),
       });
     } catch (e) {
+      if (e.status === 403 || e.status === 401) {
+        this._needsLogin = true;
+        this.canEdit = false;
+        console.warn("API hydrate needs login:", e.message);
+        return;
+      }
       console.warn("API hydrate skipped:", e.message);
       this.useApi = false;
+      this._needsLogin = false;
     }
   },
 
   async loadMemorial(slug) {
     this.slug = slug;
     if (this.useApi) await this.hydrateFromApi();
-    const m = MemorialStore.get(slug);
-    if (m) {
-      this.applyQuietMode(m.quietMode);
-      this.renderPrivacyBar(m);
-      this.renderAnniversaryTab(m);
-      this.renderMemoryTab(m);
-      this.renderCoMemorialTab(m);
-      this.syncTributeCounts(m);
-    }
+    this.refreshMemorialUI();
   },
 
   applyWelcomeCopy() {
@@ -118,6 +156,10 @@ window.MemorialCore = {
   async toggleQuiet() {
     const m = MemorialStore.get(this.slug);
     const next = !m.quietMode;
+    if (this.useApi && !this.canEdit) {
+      MemorialAuth?.requireLogin("登录后可切换静谧模式");
+      return;
+    }
     if (this.useApi) {
       try {
         await MemorialApi.patchMemorial(this.slug, { quietMode: next });
@@ -132,6 +174,10 @@ window.MemorialCore = {
   },
 
   async setPrivacy(level) {
+    if (this.useApi && !this.canEdit) {
+      MemorialAuth?.requireLogin("登录后可修改可见范围");
+      return;
+    }
     if (this.useApi) {
       try {
         await MemorialApi.patchMemorial(this.slug, { privacy: level });
@@ -157,6 +203,13 @@ window.MemorialCore = {
       if (tabs) tabs.before(bar);
     }
     const p = MEMORIAL_COPY.privacy;
+    if (this.useApi && !this.canEdit) {
+      bar.innerHTML = `
+        <p class="p0-hint privacy-readonly">可见范围：${p[m.privacy] || m.privacy}
+        ${m.quietMode ? " · 🌙 静谧模式" : ""}</p>
+      `;
+      return;
+    }
     bar.innerHTML = `
       <div class="privacy-chips">
         <button type="button" class="privacy-chip ${m.privacy === "private" ? "active" : ""}" onclick="MemorialCore.setPrivacy('private')">${p.private}</button>
@@ -220,6 +273,10 @@ window.MemorialCore = {
       showToast("请填写邮箱");
       return;
     }
+    if (this.useApi && this._needsLogin) {
+      MemorialAuth?.requireLogin("登录后可订阅追思提醒");
+      return;
+    }
     if (this.useApi) {
       try {
         await MemorialApi.subscribeReminder(this.slug, email);
@@ -258,7 +315,7 @@ window.MemorialCore = {
           <p>${MemorialStore.escapeHtml(f.content)}</p>
           <div class="memory-status">${f.status === "approved" ? c.approved : c.pending}</div>
           ${
-            f.status === "pending"
+            f.status === "pending" && (!this.useApi || this.canEdit)
               ? `<button type="button" class="memory-approve-btn" onclick="MemorialCore.approveFragment('${f.id}')">家人确认并入</button>`
               : ""
           }
@@ -285,6 +342,10 @@ window.MemorialCore = {
   },
 
   async submitFragment() {
+    if (this.useApi && this._needsLogin) {
+      MemorialAuth?.requireLogin("登录后可提交记忆");
+      return;
+    }
     const content = document.getElementById("frag-content")?.value;
     if (!content?.trim()) {
       showToast("请写下一点记忆");
@@ -314,6 +375,38 @@ window.MemorialCore = {
     showToast("已交给家族保存，待确认后展示");
     this.renderMemoryTab(MemorialStore.get(this.slug));
     this.renderCoMemorialTab(MemorialStore.get(this.slug));
+  },
+
+  async submitGuestbook(content, author) {
+    if (!content?.trim()) {
+      showToast("请填写留言内容");
+      return;
+    }
+    const payload = {
+      content: content.trim(),
+      relation: "留言祈福",
+      year: "",
+      author: author || "匿名访客",
+    };
+    if (this.useApi) {
+      if (this._needsLogin) {
+        MemorialAuth?.requireLogin("登录后可留言");
+        return;
+      }
+      try {
+        await MemorialApi.addFragment(this.slug, payload);
+        showToast("留言已发布，感谢您的思念");
+        await this.hydrateFromApi();
+        this.renderMemoryTab(MemorialStore.get(this.slug));
+        return;
+      } catch (e) {
+        showToast(e.message);
+        return;
+      }
+    }
+    MemorialStore.addFragment(this.slug, payload);
+    showToast("留言已发布，感谢您的思念");
+    this.renderMemoryTab(MemorialStore.get(this.slug));
   },
 
   async approveFragment(id) {
@@ -390,6 +483,10 @@ window.MemorialCore = {
     const message = document.getElementById("ritual-message")?.value;
     const author = document.getElementById("ritual-author")?.value;
     const type = this.pendingRitualType;
+    if (this.useApi && this._needsLogin) {
+      MemorialAuth?.requireLogin("登录后可留下心意");
+      return;
+    }
     if (this.useApi) {
       try {
         await MemorialApi.addRitual(this.slug, { type, message, author });
@@ -434,8 +531,20 @@ window.MemorialCore = {
         <button class="submit-btn" onclick="MemorialCore.createNext()">下一步</button>
       `;
     } else if (this.createStep === 2) {
+      const needAccount = this.useApi && !(window.MemorialAuth && MemorialAuth.user);
+      const accountBlock = needAccount
+        ? `
+        <div class="create-account-box">
+          <p class="p0-hint">创建账号以保存与管理纪念馆</p>
+          <div class="create-field"><label>您的邮箱</label><input id="cr-email" type="email" autocomplete="email" /></div>
+          <div class="create-field"><label>登录密码（至少8位）</label><input id="cr-password" type="password" autocomplete="new-password" /></div>
+        </div>`
+        : this.useApi
+          ? `<p class="p0-hint">已登录：${MemorialStore.escapeHtml(MemorialAuth.user.email)}</p>`
+          : "";
       body.innerHTML = `
         <p class="p0-intro">${c.privacyLabel}</p>
+        ${accountBlock}
         <div class="privacy-chips" style="justify-content:center;margin-bottom:20px">
           <button type="button" class="privacy-chip" data-pv="private" onclick="MemorialCore.pickPrivacy(this,'private')">${MEMORIAL_COPY.privacy.private}</button>
           <button type="button" class="privacy-chip active" data-pv="family" onclick="MemorialCore.pickPrivacy(this,'family')">${MEMORIAL_COPY.privacy.family}</button>
@@ -449,7 +558,7 @@ window.MemorialCore = {
       body.innerHTML = `
         <p class="p0-intro" style="text-align:center">${c.done}</p>
         <p class="p0-hint" style="text-align:center">${c.doneHint}</p>
-        <button class="submit-btn" style="display:block;margin:24px auto" onclick="goPage('profile-li')">${c.open}</button>
+        <button class="submit-btn" style="display:block;margin:24px auto" onclick="MemorialCore.openCreatedMemorial()">${c.open}</button>
       `;
     }
   },
@@ -485,8 +594,29 @@ window.MemorialCore = {
       };
       if (this.useApi) {
         try {
-          const res = await MemorialApi.createMemorial(payload);
-          this.slug = res.slug;
+          if (window.MemorialAuth && MemorialAuth.user) {
+            const res = await MemorialApi.createMemorial(payload);
+            this.slug = res.slug;
+          } else {
+            const email = document.getElementById("cr-email")?.value?.trim();
+            const password = document.getElementById("cr-password")?.value;
+            if (!email || !password || password.length < 8) {
+              showToast("请填写邮箱与至少8位密码");
+              return;
+            }
+            const res = await MemorialApi.register({
+              email,
+              password,
+              memorial: payload,
+            });
+            if (!res.memorialSlug) {
+              showToast("创建失败，请重试");
+              return;
+            }
+            this.slug = res.memorialSlug;
+            await MemorialAuth.refresh();
+          }
+          await this.hydrateFromApi();
         } catch (e) {
           showToast(e.message);
           return;
@@ -498,6 +628,41 @@ window.MemorialCore = {
       this.createStep = 3;
       this.renderCreatePage();
       return;
+    }
+  },
+
+  openCreatedMemorial() {
+    if (typeof goPage === "function") goPage("profile-li");
+    this.loadMemorial(this.slug).catch(console.error);
+  },
+
+  async searchAndOpen(query) {
+    if (!this.useApi) {
+      showToast("在线搜索需连接服务器");
+      return;
+    }
+    try {
+      const data = await MemorialApi.searchMemorials(query);
+      const list = data.memorials || [];
+      if (!list.length) {
+        showToast("未找到匹配的纪念馆");
+        return;
+      }
+      const hit = list[0];
+      if (!hit.viewable) {
+        this.slug = hit.slug;
+        if (typeof goPage === "function") goPage("profile-li");
+        this._needsLogin = true;
+        this.renderApiBanner();
+        MemorialAuth?.promptLogin(`找到「${hit.name}」，请登录后访问`);
+        return;
+      }
+      this.slug = hit.slug;
+      if (typeof goPage === "function") goPage("profile-li");
+      await this.loadMemorial(hit.slug);
+      showToast("已进入「" + hit.name + "」纪念馆");
+    } catch (e) {
+      showToast(e.message || "搜索失败");
     }
   },
 };
@@ -515,26 +680,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const origGoPage = window.goPage;
   if (origGoPage) {
     window.goPage = function (id) {
+      if (id && id.startsWith("profile-") && id !== "profile-li") {
+        showToast("该演示纪念馆尚未开放，请先参观李明德纪念馆");
+        id = "profile-li";
+      }
       origGoPage(id);
       if (id === "create" && window.MemorialCore) {
         MemorialCore.createStep = 1;
         MemorialCore.renderCreatePage();
       }
       if (id === "profile-li" && window.MemorialCore) {
-        const slug = MemorialCore.slug || "li-mingde";
-        const m = MemorialStore.get(slug);
-        if (m) {
-          MemorialCore.applyQuietMode(m.quietMode);
-          MemorialCore.renderPrivacyBar(m);
-          MemorialCore.renderAnniversaryTab(m);
-          MemorialCore.renderMemoryTab(m);
-          MemorialCore.renderCoMemorialTab(m);
-        }
-      }
-      if (id && id.startsWith("profile-") && id !== "profile-li" && window.MemorialCore) {
-        const slug = id.replace(/^profile-/, "");
-        MemorialCore.slug = slug;
-        MemorialCore.loadMemorial(slug).catch(console.error);
+        MemorialCore.refreshMemorialUI();
       }
     };
   }

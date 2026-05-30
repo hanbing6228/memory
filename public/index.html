@@ -31,6 +31,27 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
 .nav-link{padding:6px 10px;font-size:12px;color:var(--ink2);cursor:pointer;border-radius:6px;white-space:nowrap;transition:all .2s;font-family:'Noto Sans SC',sans-serif}
 .nav-link:hover,.nav-link.active{background:var(--gold);color:#fff}
 .nav-btn{padding:7px 14px;background:var(--red);color:#fff;border-radius:20px;font-size:12px;cursor:pointer;white-space:nowrap;border:none;font-family:'Noto Sans SC',sans-serif;flex-shrink:0}
+.nav-auth-slot{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.nav-auth-btn{padding:6px 10px;border:1px solid var(--paper3);background:#fff;border-radius:16px;font-size:11px;cursor:pointer;color:var(--ink2);font-family:'Noto Sans SC',sans-serif}
+.nav-auth-btn:hover{border-color:var(--gold);color:var(--ink)}
+.nav-auth-demo{background:var(--gold);color:#fff;border-color:var(--gold)}
+.nav-auth-user{font-size:11px;color:var(--ink2);max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.auth-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.auth-modal.open{display:flex}
+.auth-modal-box{background:#fff;border-radius:16px;padding:28px 24px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.auth-title{font-family:'Ma Shan Zheng',cursive;font-size:26px;color:var(--ink);margin-bottom:6px}
+.auth-sub{font-size:13px;color:var(--ink2);margin-bottom:18px;line-height:1.6}
+.auth-field{margin-bottom:12px}
+.auth-field label{display:block;font-size:12px;color:var(--ink2);margin-bottom:4px}
+.auth-field input{width:100%;padding:10px 12px;border:1px solid var(--paper3);border-radius:8px;font-size:14px}
+.auth-submit{width:100%;margin-top:8px}
+.auth-switch{text-align:center;font-size:12px;color:var(--ink2);margin-top:14px}
+.auth-link{background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;padding:0}
+.auth-hint{font-size:11px;color:var(--ink2);opacity:.7;margin-top:12px;text-align:center}
+.memorial-api-banner{background:#fff8e8;border:1px solid #f0dfa0;border-radius:12px;padding:14px 16px;margin:12px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.memorial-api-banner p{flex:1;font-size:13px;color:var(--ink2);margin:0;min-width:180px}
+.create-account-box{background:var(--paper2);border-radius:12px;padding:14px;margin-bottom:16px}
+.privacy-readonly{margin:0;font-size:13px;color:var(--ink2)}
 .page-content{padding-top:56px}
 
 /* ===== TOAST ===== */
@@ -435,6 +456,7 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
       <div class="nav-link" onclick="goPage('membook')">纪念册</div>
       <div class="nav-link" onclick="goPage('pricing')">会员</div>
     </div>
+    <div id="nav-auth-slot" class="nav-auth-slot"></div>
     <button class="nav-btn" data-action="create-memorial">创建纪念馆</button>
   </div>
 </nav>
@@ -544,7 +566,7 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
             <button class="memorial-btn">前往纪念</button>
           </div>
         </div>
-        <div class="memorial-card" onclick="goPage('profile-zhang')">
+        <div class="memorial-card" onclick="showToast('演示版仅开放李明德纪念馆，请点击第一张卡片')">
           <div class="memorial-header" style="background:linear-gradient(135deg,#3a1a2a,#5a2a3a)">
             <div class="memorial-avatar" style="background:linear-gradient(135deg,#7a3a5a,#5a2a3a)">秀</div>
           </div>
@@ -558,7 +580,7 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
             <button class="memorial-btn">前往纪念</button>
           </div>
         </div>
-        <div class="memorial-card" onclick="goPage('profile-wang')">
+        <div class="memorial-card" onclick="showToast('演示版仅开放李明德纪念馆，请点击第一张卡片')">
           <div class="memorial-header" style="background:linear-gradient(135deg,#1a2a3a,#2a3a5a)">
             <div class="memorial-avatar" style="background:linear-gradient(135deg,#3a5a7a,#2a3a5a)">淑</div>
           </div>
@@ -1249,6 +1271,14 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
   </div>
 </div>
 
+<!-- AUTH MODAL -->
+<div class="auth-modal" id="auth-modal" onclick="if(event.target===this)MemorialAuth.close()">
+  <div class="auth-modal-box">
+    <button class="modal-close" type="button" style="float:right" onclick="MemorialAuth.close()">✕</button>
+    <div id="auth-modal-body"></div>
+  </div>
+</div>
+
 <!-- ARTICLE MODAL -->
 <div class="modal-overlay" id="article-modal">
   <div class="modal-box">
@@ -1273,6 +1303,7 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
 <script src="js/dates.js"></script>
 <script src="js/memorial-store.js"></script>
 <script src="js/memorial-api.js"></script>
+<script src="js/memorial-auth.js"></script>
 <script src="js/memorial-core.js"></script>
 <script>
 // ===== STATE =====
@@ -1311,16 +1342,27 @@ function switchTab(btn,id){
 // ===== TRIBUTE (P0: 见 js/memorial-core.js · addTribute → 心意模态) =====
 
 // ===== GUESTBOOK =====
-function submitMsg(){
-  const msg=document.getElementById('msgInput').value.trim();
-  const name=document.getElementById('msgName').value.trim()||'匿名访客';
-  if(!msg){showToast('请填写留言内容');return;}
+function appendGuestbookDom(msg, name) {
   const list=document.getElementById('messages-li');
+  if(!list) return;
   const item=document.createElement('div');
   item.className='message-item';
   item.style.animation='fadeIn .3s ease';
   item.innerHTML=`<div class="message-top"><span class="message-author">${name}</span><span class="message-time">刚刚</span></div><div class="message-text">${msg}</div><div class="message-candle">🕯️</div>`;
   list.insertBefore(item,list.firstChild);
+}
+function submitMsg(){
+  const msg=document.getElementById('msgInput').value.trim();
+  const name=document.getElementById('msgName').value.trim()||'匿名访客';
+  if(!msg){showToast('请填写留言内容');return;}
+  if(window.MemorialCore){
+    MemorialCore.submitGuestbook(msg,name).then(()=>{
+      document.getElementById('msgInput').value='';
+      appendGuestbookDom(msg,name);
+    });
+    return;
+  }
+  appendGuestbookDom(msg,name);
   document.getElementById('msgInput').value='';
   showToast('留言已发布，感谢您的思念');
 }
@@ -1539,7 +1581,16 @@ function filterThemes(el,cat){
 function doSearch(){
   const q=document.getElementById('searchInput').value.trim();
   if(!q){showToast('请输入姓名搜索');return;}
-  showToast('正在搜索「'+q+'」的纪念馆…');
+  if(window.MemorialCore&&MemorialCore.useApi){
+    MemorialCore.searchAndOpen(q);
+    return;
+  }
+  if(q.includes('李明')||q.includes('明德')||q.toLowerCase().includes('li')){
+    goPage('profile-li');
+    showToast('已进入李明德纪念馆');
+    return;
+  }
+  showToast('正在搜索「'+q+'」的纪念馆…（离线模式仅支持演示馆）');
 }
 
 // ===== LANTERNS & PETALS =====
