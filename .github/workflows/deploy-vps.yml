@@ -1,0 +1,64 @@
+name: Deploy to Hostinger VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install and build
+        run: |
+          npm ci
+          echo 'DATABASE_URL="file:./data/memorial.db"' >> .env
+          echo 'AUTH_SECRET="${{ secrets.AUTH_SECRET }}"' >> .env
+          npx prisma generate
+          npx prisma db push
+          npm run build
+
+      - name: Snyk security scan
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: |
+          if [ -n "$SNYK_TOKEN" ]; then
+            npm install -g snyk
+            snyk auth "$SNYK_TOKEN"
+            snyk test --severity-threshold=high || true
+            snyk code test --severity-threshold=high || true
+          fi
+
+      - name: Deploy via SSH
+        if: ${{ secrets.DEPLOY_HOST != '' }}
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            export DEPLOY_PATH="${{ secrets.DEPLOY_PATH }}"
+            cd "$DEPLOY_PATH"
+            git pull origin main
+            npm ci
+            npx prisma generate
+            npx prisma db push
+            npm run build
+            sudo systemctl restart nianguichu || pm2 restart nianguichu || true
+
+      - name: Cron reminder ping
+        if: ${{ secrets.CRON_SECRET != '' && secrets.DEPLOY_URL != '' }}
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.DEPLOY_URL }}/api/cron/reminders" || true

@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  memorials    Memorial[]
+  rituals      Ritual[]
+  fragments    MemoryFragment[]
+}
+
+model Memorial {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name      String
+  birthDate DateTime?
+  deathDate DateTime
+  motto     String?
+  privacy   String   @default("family")
+  quietMode Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  rituals         Ritual[]
+  fragments       MemoryFragment[]
+  reminders       Reminder[]
+  members         MemorialMember[]
+  notionSyncLogs  NotionSyncLog[]
+}
+
+model MemorialMember {
+  id         String   @id @default(cuid())
+  memorialId String
+  memorial   Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+  email      String
+  role       String   @default("family")
+  inviteToken String? @unique
+  createdAt  DateTime @default(now())
+
+  @@unique([memorialId, email])
+}
+
+model Ritual {
+  id           String   @id @default(cuid())
+  memorialId   String
+  memorial     Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+  type         String
+  message      String?
+  author       String?
+  authorUserId String?
+  authorUser   User?    @relation(fields: [authorUserId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+}
+
+model MemoryFragment {
+  id           String   @id @default(cuid())
+  memorialId   String
+  memorial     Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+  content      String
+  relation     String?
+  year         String?
+  author       String?
+  authorUserId String?
+  authorUser   User?    @relation(fields: [authorUserId], references: [id], onDelete: SetNull)
+  status       String   @default("pending")
+  createdAt    DateTime @default(now())
+}
+
+model Reminder {
+  id         String   @id @default(cuid())
+  memorialId String
+  memorial   Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+  email      String
+  createdAt  DateTime @default(now())
+
+  @@unique([memorialId, email])
+}
+
+model ReminderDispatch {
+  id         String   @id @default(cuid())
+  memorialId String
+  email      String
+  eventKey   String
+  eventDate  DateTime
+  sentAt     DateTime @default(now())
+
+  @@unique([memorialId, email, eventKey, eventDate])
+}
+
+model NotionSyncLog {
+  id         String   @id @default(cuid())
+  memorialId String
+  memorial   Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+  payload    String
+  status     String
+  createdAt  DateTime @default(now())
+}

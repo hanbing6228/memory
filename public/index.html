@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>念归处 · 华人数字纪念馆</title>
 <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/memorial-p0.css">
+<meta name="robots" content="noindex,nofollow" id="meta-robots">
 <style>
 :root {
   --ink:#1a1208;--ink2:#3d2b1a;--paper:#f5f0e8;--paper2:#ede8db;--paper3:#e4ddd0;
@@ -433,12 +435,28 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
       <div class="nav-link" onclick="goPage('membook')">纪念册</div>
       <div class="nav-link" onclick="goPage('pricing')">会员</div>
     </div>
-    <button class="nav-btn" onclick="showToast('注册功能即将上线，敬请期待')">创建纪念馆</button>
+    <button class="nav-btn" data-action="create-memorial">创建纪念馆</button>
   </div>
 </nav>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- 祭奠心意模态 -->
+<div class="modal-overlay" id="ritual-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="ritual-modal-title">寄一份心意</h3>
+      <button type="button" class="modal-close" onclick="MemorialCore.closeRitualModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="ritual-modal-prompt" style="font-size:14px;line-height:1.8;color:var(--ink2);margin-bottom:12px"></p>
+      <textarea id="ritual-message" placeholder="这句话只有您和家族能看到。"></textarea>
+      <input type="text" id="ritual-author" placeholder="您的称呼（可选）" />
+      <button type="button" class="submit-btn" style="width:100%" onclick="MemorialCore.confirmRitual()">完成祭奠</button>
+    </div>
+  </div>
+</div>
 
 <!-- ==================== HOME PAGE ==================== -->
 <div class="page active" id="page-home">
@@ -574,6 +592,13 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
 </div>
 
 
+<!-- ==================== CREATE MEMORIAL ==================== -->
+<div class="page" id="page-create">
+  <div class="page-content">
+    <div class="create-inner"></div>
+  </div>
+</div>
+
 <!-- ==================== PROFILE: LI MINGDE ==================== -->
 <div class="page" id="page-profile-li">
   <div class="page-content">
@@ -586,6 +611,7 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
       <div class="profile-name">李明德</div>
       <div class="profile-years">1938年4月3日 — 2023年11月18日 · 享年85岁</div>
       <div class="profile-motto">「春蚕到死丝方尽，蜡炬成灰泪始干」<br>献身教育四十年，桃李满天下</div>
+      <p class="profile-enter-hint" id="profile-enter-hint"></p>
       <div class="tribute-bar">
         <button class="tribute-btn" onclick="addTribute(this,'蜡烛')"><span class="tribute-emoji">🕯️</span><span class="tribute-count" id="tc1">3,247</span><span class="tribute-label">点燃蜡烛</span></button>
         <button class="tribute-btn" onclick="addTribute(this,'鲜花')"><span class="tribute-emoji">🌸</span><span class="tribute-count" id="tc2">2,186</span><span class="tribute-label">献花</span></button>
@@ -599,6 +625,9 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
       <button class="profile-tab" onclick="switchTab(this,'tab-gallery-li')">影像相册</button>
       <button class="profile-tab" onclick="switchTab(this,'tab-timeline-li')">人生历程</button>
       <button class="profile-tab" onclick="switchTab(this,'tab-guestbook-li')">留言祈福</button>
+      <button class="profile-tab" onclick="switchTab(this,'tab-memory-li')">记忆共创</button>
+      <button class="profile-tab" onclick="switchTab(this,'tab-comemorial-li')">共祭时光</button>
+      <button class="profile-tab" onclick="switchTab(this,'tab-anniversary-li')">追思节律</button>
       <button class="profile-tab" onclick="switchTab(this,'tab-family-li')">家族树</button>
       <button class="profile-tab" onclick="switchTab(this,'tab-events-li')">纪念仪式</button>
       <button class="profile-tab" onclick="switchTab(this,'tab-grief-li')">悲伤疗愈</button>
@@ -691,6 +720,13 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
         <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-year">2023年</div><div class="timeline-event">安然辞世</div><div class="timeline-desc">11月18日，在家人陪伴下安详离去，享年85岁</div></div>
       </div>
     </div>
+
+    <!-- P0: MEMORY CO-CREATE -->
+    <div class="tab-content" id="tab-memory-li"></div>
+    <!-- P0: CO-MEMORIAL STREAM -->
+    <div class="tab-content" id="tab-comemorial-li"></div>
+    <!-- P0: ANNIVERSARY RHYTHM -->
+    <div class="tab-content" id="tab-anniversary-li"></div>
 
     <!-- GUESTBOOK -->
     <div class="tab-content" id="tab-guestbook-li">
@@ -1232,6 +1268,11 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
   <button class="cart-checkout" onclick="showToast('即将跳转结算页面')">立即结算 →</button>
 </div>
 
+<script src="js/copy.js"></script>
+<script src="js/dates.js"></script>
+<script src="js/memorial-store.js"></script>
+<script src="js/memorial-api.js"></script>
+<script src="js/memorial-core.js"></script>
 <script>
 // ===== STATE =====
 let cart=[], cartOpen=false;
@@ -1266,15 +1307,7 @@ function switchTab(btn,id){
   if(el)el.classList.add('active');
 }
 
-// ===== TRIBUTE =====
-function addTribute(btn,type){
-  const countEl=btn.querySelector('.tribute-count');
-  const num=parseInt(countEl.textContent.replace(/,/g,''));
-  countEl.textContent=(num+1).toLocaleString('zh');
-  btn.style.transform='scale(1.3)';
-  setTimeout(()=>btn.style.transform='',300);
-  showToast('已为李明德先生'+type+'，愿他安息');
-}
+// ===== TRIBUTE (P0: 见 js/memorial-core.js · addTribute → 心意模态) =====
 
 // ===== GUESTBOOK =====
 function submitMsg(){
@@ -1534,6 +1567,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   initHero();
   renderPlanning();
   renderThemes();
+  const hint=document.getElementById('profile-enter-hint');
+  if(hint&&window.MEMORIAL_COPY) hint.textContent=MEMORIAL_COPY.enterMemorial('李明德');
 });
 </script>
 </body>
