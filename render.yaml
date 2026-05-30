@@ -1,9 +1,6 @@
-databases:
-  - name: nianguichu-db
-    plan: free
-    databaseName: memorial
-    user: memorial
-
+# Web service only — Render free tier allows ONE Postgres database per account.
+# If you already have nianguichu-db-k7og (or similar), paste its Internal Connection String
+# into the web service env var DATABASE_URL. Do NOT add a second free database.
 services:
   - type: web
     name: nianguichu
@@ -15,9 +12,7 @@ services:
     healthCheckPath: /api/integrations/status
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: nianguichu-db
-          property: connectionString
+        sync: false
       - key: AUTH_SECRET
         generateValue: true
       - key: NEXT_PUBLIC_APP_URL
