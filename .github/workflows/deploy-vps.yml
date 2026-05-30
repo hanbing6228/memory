@@ -10,8 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
       CRON_SECRET: ${{ secrets.CRON_SECRET }}
       DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
+    if: env.DEPLOY_HOST != '' && env.DATABASE_URL != ''
     steps:
       - uses: actions/checkout@v4
 
