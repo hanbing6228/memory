@@ -51,7 +51,6 @@ jobs:
           fi
 
       - name: Deploy via SSH
-        if: env.DEPLOY_HOST != ''
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DEPLOY_HOST }}
