@@ -1,8 +1,9 @@
 # Full stack Blueprint: 1 free Postgres + 1 web service (Render allows one free DB per account).
-# Fresh start: delete old Blueprint/services first, then Manual Sync or "New Blueprint".
+# Web and DB must share the same region — connectionString uses Render private network only.
 databases:
   - name: nianguichu-db
     plan: free
+    region: oregon
     databaseName: memorial
     user: memorial
 
@@ -11,10 +12,9 @@ services:
     name: nianguichu
     runtime: node
     plan: free
-    region: singapore
-    # Build runs without DB access on Render; migrate/seed run at start (free tier has no preDeployCommand).
+    region: oregon
     buildCommand: NPM_CONFIG_PRODUCTION=false npm ci && npx prisma generate && npx next build
-    startCommand: npx prisma migrate deploy && npm run seed && npm start
+    startCommand: bash scripts/render-start.sh
     healthCheckPath: /api/integrations/status
     envVars:
       - key: DATABASE_URL
