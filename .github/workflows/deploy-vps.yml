@@ -8,6 +8,10 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+      DEPLOY_URL: ${{ secrets.DEPLOY_URL }}
     steps:
       - uses: actions/checkout@v4
 
@@ -19,10 +23,16 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install and build
+        env:
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
         run: |
           npm ci
           echo 'DATABASE_URL="file:./data/memorial.db"' >> .env
-          echo 'AUTH_SECRET="${{ secrets.AUTH_SECRET }}"' >> .env
+          if [ -n "$AUTH_SECRET" ]; then
+            echo "AUTH_SECRET=$AUTH_SECRET" >> .env
+          else
+            echo 'AUTH_SECRET="ci-deploy-placeholder-32chars"' >> .env
+          fi
           npx prisma generate
           npx prisma db push
           npm run build
@@ -40,7 +50,7 @@ jobs:
           fi
 
       - name: Deploy via SSH
-        if: ${{ secrets.DEPLOY_HOST != '' }}
+        if: env.DEPLOY_HOST != ''
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -57,8 +67,8 @@ jobs:
             sudo systemctl restart nianguichu || pm2 restart nianguichu || true
 
       - name: Cron reminder ping
-        if: ${{ secrets.CRON_SECRET != '' && secrets.DEPLOY_URL != '' }}
+        if: env.CRON_SECRET != '' && env.DEPLOY_URL != ''
         run: |
           curl -sf -X POST \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "${{ secrets.DEPLOY_URL }}/api/cron/reminders" || true
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$DEPLOY_URL/api/cron/reminders" || true
