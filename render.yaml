@@ -10,7 +10,7 @@ services:
     runtime: node
     plan: free
     region: singapore
-    buildCommand: npm ci && npm run build && npm run seed
+    buildCommand: NPM_CONFIG_PRODUCTION=false npm ci && npm run build && npm run seed
     startCommand: npm start
     healthCheckPath: /api/integrations/status
     envVars:
