@@ -1,11 +1,30 @@
 # 念归处 · 数字纪念堂
 
-华人数字纪念馆 — 静态演示 + 全栈 API 双轨部署。
+华人数字纪念馆 — 可交互产品 + 全栈 API。
 
-| 环境 | URL 示例 | 能力 |
-|------|----------|------|
-| GitHub Pages | https://hanbing6228.github.io/memory/ | 静态 UI + localStorage 演示 |
-| Hostinger VPS | `https://memory.yourdomain.com` | 登录、数据库、Composio 提醒 |
+## 线上地址
+
+| 地址 | 说明 |
+|------|------|
+| https://hanbing6228.github.io/memory/ | **静态演示**（P0 交互 + 浏览器 localStorage，无需登录） |
+| Render / Vercel 部署后 | **完整产品**（账号、数据库、跨设备同步） |
+
+> GitHub Pages 曾误发布 README，已改为 workflow 部署 `public/` 目录，现已恢复完整网页。
+
+### 一键部署完整产品（Render，免费 PostgreSQL）
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/hanbing6228/memory)
+
+部署后在 Render 控制台设置 `NEXT_PUBLIC_APP_URL` 为你的 Render 域名，并运行一次 Seed（见 DEPLOY.md）。
+
+### Vercel 部署
+
+1. [导入 GitHub 仓库](https://vercel.com/new) → 选择 `hanbing6228/memory`
+2. 添加 **Neon Postgres** 集成（Marketplace → Neon）
+3. 环境变量：`AUTH_SECRET`（随机 32 字节）、`DATABASE_URL`（Neon 自动注入）
+4. 部署完成后访问 `https://你的项目.vercel.app`
+
+或在 GitHub Secrets 配置 `VERCEL_TOKEN`、`VERCEL_ORG_ID`、`VERCEL_PROJECT_ID` 后运行 workflow **Deploy to Vercel**。
 
 ## 本地开发（全栈）
 

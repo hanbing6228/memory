@@ -8,6 +8,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: memorial
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/memorial
     steps:
       - uses: actions/checkout@v4
 
@@ -23,8 +39,5 @@ jobs:
           AUTH_SECRET: ci-build-secret-min-16-chars
         run: |
           npm ci
-          echo 'DATABASE_URL="file:./data/memorial.db"' >> .env
           echo "AUTH_SECRET=$AUTH_SECRET" >> .env
-          npx prisma generate
-          npx prisma db push
           npm run build

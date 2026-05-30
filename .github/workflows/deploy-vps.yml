@@ -25,16 +25,17 @@ jobs:
       - name: Install and build
         env:
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           npm ci
-          echo 'DATABASE_URL="file:./data/memorial.db"' >> .env
+          echo 'DATABASE_URL="${{ secrets.DATABASE_URL }}"' >> .env
           if [ -n "$AUTH_SECRET" ]; then
             echo "AUTH_SECRET=$AUTH_SECRET" >> .env
           else
             echo 'AUTH_SECRET="ci-deploy-placeholder-32chars"' >> .env
           fi
           npx prisma generate
-          npx prisma db push
+          npx prisma migrate deploy
           npm run build
 
       - name: Snyk security scan
