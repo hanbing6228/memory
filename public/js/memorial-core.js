@@ -10,15 +10,39 @@ window.MemorialCore = {
   async init() {
     this.applyWelcomeCopy();
     this.bindCreateNav();
+    this.parseUrlSlug();
     if (window.MemorialApi) {
       const status = await MemorialApi.health();
       this.useApi = !!(status && status.database);
+      if (window.MEMORIAL_CONFIG) {
+        window.MEMORIAL_CONFIG.stripeEnabled = !!(status && status.stripeEnabled);
+      }
     }
     if (window.MemorialAuth) {
       await MemorialAuth.init(this.useApi);
     }
     if (this.useApi) await this.hydrateFromApi();
     this.refreshMemorialUI();
+    if (window.MemorialContent) {
+      MemorialContent.loadHomeMemorials(this.useApi);
+      MemorialContent.renderThemesGrid(
+        MemorialStore.get(this.slug)?.themeId || "ink-default"
+      );
+      MemorialContent.renderArticlesGrid("articles-li");
+      MemorialContent.renderArticlesGrid("guides-articles-grid");
+      MemorialContent.renderArticlesGrid("home-guides-grid");
+      MemorialContent.renderGuidesAdmin();
+      MemorialContent.syncPlanningUI(MemorialContent.loadPlanningState());
+    }
+    if (window.MemorialCommerce) {
+      await MemorialCommerce.init(this.useApi);
+    }
+  },
+
+  parseUrlSlug() {
+    const params = new URLSearchParams(location.search);
+    const m = params.get("memorial");
+    if (m) this.slug = m;
   },
 
   async onAuthChanged() {
@@ -37,6 +61,9 @@ window.MemorialCore = {
     this.renderCoMemorialTab(m);
     this.syncTributeCounts(m);
     this.renderApiBanner();
+    if (window.MemorialContent) {
+      MemorialContent.renderAllProfileTabs(m);
+    }
   },
 
   renderApiBanner() {
@@ -73,8 +100,14 @@ window.MemorialCore = {
         birthDate: mem.birthDate,
         deathDate: mem.deathDate,
         motto: mem.motto,
+        bioHtml: mem.bioHtml,
+        familyNote: mem.familyNote,
+        themeId: mem.themeId || "ink-default",
         privacy: mem.privacy,
         quietMode: mem.quietMode,
+        timeline: mem.timeline || [],
+        family: mem.family || [],
+        gallery: mem.gallery || [],
         tributeCounts: mem.tributeCounts || {},
         rituals: (mem.rituals || []).map((r) => ({
           id: r.id,
@@ -111,6 +144,36 @@ window.MemorialCore = {
     this.slug = slug;
     if (this.useApi) await this.hydrateFromApi();
     this.refreshMemorialUI();
+  },
+
+  openMemorial(slug) {
+    if (typeof goPage === "function") goPage("profile-li");
+    this.loadMemorial(slug).catch(console.error);
+  },
+
+  async publishObituary(html) {
+    if (!html?.trim()) {
+      showToast("请先生成讣告内容");
+      return;
+    }
+    if (this.useApi && !this.canEdit) {
+      MemorialAuth?.requireLogin("登录后可发布讣告到纪念馆");
+      return;
+    }
+    if (this.useApi) {
+      try {
+        await MemorialApi.patchMemorial(this.slug, { bioHtml: html });
+        await this.hydrateFromApi();
+      } catch (e) {
+        showToast(e.message);
+        return;
+      }
+    } else {
+      MemorialStore.update(this.slug, { bioHtml: html });
+    }
+    this.refreshMemorialUI();
+    showToast("讣告已发布到纪念馆 · 生平故事");
+    if (typeof goPage === "function") goPage("profile-li");
   },
 
   applyWelcomeCopy() {
@@ -398,6 +461,9 @@ window.MemorialCore = {
         showToast("留言已发布，感谢您的思念");
         await this.hydrateFromApi();
         this.renderMemoryTab(MemorialStore.get(this.slug));
+        if (window.MemorialContent) {
+          MemorialContent.renderGuestbookTab(MemorialStore.get(this.slug));
+        }
         return;
       } catch (e) {
         showToast(e.message);
@@ -691,6 +757,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (id === "profile-li" && window.MemorialCore) {
         MemorialCore.refreshMemorialUI();
+      }
+      if (id === "qr" && window.MemorialContent) {
+        MemorialContent.renderQrDemo(
+          MemorialCore.slug,
+          MemorialStore.get(MemorialCore.slug)
+        );
+      }
+      if (id === "guides" && window.MemorialContent) {
+        MemorialContent.renderArticlesGrid("guides-articles-grid");
+        MemorialContent.renderGuidesAdmin();
       }
     };
   }

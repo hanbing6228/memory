@@ -43,7 +43,18 @@ export async function GET(request: Request) {
       name: m.name,
       motto: m.motto,
       privacy: m.privacy,
-      viewable: canView({ ...m, rituals: [], fragments: [], reminders: [] }, user),
+      viewable: canView(
+        {
+          ...m,
+          rituals: [],
+          fragments: [],
+          reminders: [],
+          timelineEvents: [],
+          familyPeople: [],
+          mediaItems: [],
+        },
+        user
+      ),
     });
   }
 
@@ -63,7 +74,18 @@ export async function GET(request: Request) {
       name: m.name,
       motto: m.motto,
       privacy: m.privacy,
-      viewable: canView({ ...m, rituals: [], fragments: [], reminders: [] }, user),
+      viewable: canView(
+        {
+          ...m,
+          rituals: [],
+          fragments: [],
+          reminders: [],
+          timelineEvents: [],
+          familyPeople: [],
+          mediaItems: [],
+        },
+        user
+      ),
     });
   }
 

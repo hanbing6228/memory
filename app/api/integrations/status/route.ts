@@ -6,5 +6,6 @@ export async function GET() {
     composio: composioConfigured(),
     cron: Boolean(process.env.CRON_SECRET),
     database: Boolean(process.env.DATABASE_URL),
+    stripeEnabled: Boolean(process.env.STRIPE_SECRET_KEY),
   });
 }

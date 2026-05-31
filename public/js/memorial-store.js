@@ -10,8 +10,26 @@ window.MemorialStore = {
       birthDate: "1938-04-03",
       deathDate: "2023-11-18",
       motto: "春蚕到死丝尽，蜡炬成灰泪始干",
+      bioHtml:
+        "<p>李明德先生，1938年4月3日出生于湖南省长沙市，2023年11月18日于家中安详辞世，享年85岁。</p><p>李先生自1962年起执教于长沙市第一中学，执教生涯长达36年，桃李满天下。</p>",
+      familyNote:
+        "父亲走了，带走了那扇永远亮着灯的窗。每个深夜，我们仍会想起您书房里飘出的墨香。",
+      themeId: "ink-default",
       privacy: "family",
       quietMode: true,
+      timeline: [
+        { yearLabel: "1938年", title: "出生于湖南长沙", description: "在书香门第中成长" },
+        { yearLabel: "1962年", title: "入职长沙市第一中学", description: "开始执教生涯" },
+        { yearLabel: "2023年", title: "安然辞世", description: "在家人陪伴下安详离去" },
+      ],
+      family: [
+        { groupLabel: "配偶", name: "陈美华", relation: "妻子 · 相伴63载", avatarChar: "美" },
+        { groupLabel: "子女", name: "李欣然", relation: "女儿 · 医师", avatarChar: "欣" },
+      ],
+      gallery: [
+        { caption: "退休典礼", emoji: "📸", yearLabel: "1998年" },
+        { caption: "书法作品", emoji: "🖋️", yearLabel: "2015年" },
+      ],
       rituals: [],
       fragments: [],
       reminders: [],

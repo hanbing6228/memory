@@ -28,15 +28,18 @@ export async function POST(request: Request) {
     ? sanitizeShort(parsed.data.author)
     : user?.name || user?.email || "家人";
 
+  const relation = parsed.data.relation ? sanitizeShort(parsed.data.relation) : null;
+  const isGuestbook = relation?.includes("留言") ?? false;
+
   const fragment = await prisma.memoryFragment.create({
     data: {
       memorialId: memorial.id,
       content: sanitizeText(parsed.data.content, 2000),
-      relation: parsed.data.relation ? sanitizeShort(parsed.data.relation) : null,
+      relation,
       year: parsed.data.year ? sanitizeShort(parsed.data.year) : null,
       author,
       authorUserId: user?.id,
-      status: "pending",
+      status: isGuestbook ? "approved" : "pending",
     },
   });
 

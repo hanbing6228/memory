@@ -100,6 +100,92 @@ window.MemorialApi = {
     });
   },
 
+  async listPublicMemorials() {
+    return this.request("/api/memorials/public");
+  },
+
+  async submitInquiry(payload) {
+    return this.request("/api/inquiries", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async listArticles(cat) {
+    const q = cat && cat !== "all" ? "?cat=" + encodeURIComponent(cat) : "";
+    return this.request("/api/articles" + q);
+  },
+
+  async getArticle(id) {
+    return this.request("/api/articles/" + encodeURIComponent(id));
+  },
+
+  async createArticle(payload) {
+    return this.request("/api/articles", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async listProducts(cat) {
+    const q = cat && cat !== "all" ? "?cat=" + encodeURIComponent(cat) : "";
+    return this.request("/api/products" + q);
+  },
+
+  async getProduct(slug) {
+    return this.request("/api/products/" + encodeURIComponent(slug));
+  },
+
+  async createOrder(payload) {
+    return this.request("/api/orders", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async getOrder(orderNumber) {
+    const params = new URLSearchParams({ orderNumber });
+    return this.request("/api/orders?" + params.toString());
+  },
+
+  async listMedia(slug) {
+    return this.request(
+      "/api/memorials/" + encodeURIComponent(slug) + "/media"
+    );
+  },
+
+  async uploadMedia(slug, formData) {
+    const res = await fetch(
+      this.base + "/api/memorials/" + encodeURIComponent(slug) + "/media",
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      }
+    );
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.ok) {
+      const err = new Error(json.error || res.statusText || "上传失败");
+      err.status = res.status;
+      throw err;
+    }
+    return json.data;
+  },
+
+  async deleteMedia(slug, mediaId) {
+    return this.request(
+      "/api/memorials/" +
+        encodeURIComponent(slug) +
+        "/media/" +
+        encodeURIComponent(mediaId),
+      { method: "DELETE" }
+    );
+  },
+
+  qrUrl(slug) {
+    return this.base + "/api/memorials/" + encodeURIComponent(slug) + "/qr";
+  },
+
   async register(payload) {
     return this.request("/api/auth/register", {
       method: "POST",

@@ -18,6 +18,7 @@ window.MemorialAuth = {
       this.user = null;
     }
     this.renderNav();
+    if (window.MemorialContent) MemorialContent.renderGuidesAdmin();
     return this.user;
   },
 

@@ -9,6 +9,7 @@ import {
 } from "@/lib/memorial-access";
 import { buildMemorialSchedule } from "@/lib/dates";
 import { sanitizeText } from "@/lib/sanitize";
+import { sanitizeHtml } from "@/lib/sanitize-html";
 
 type Params = { params: { slug: string } };
 
@@ -33,6 +34,9 @@ const patchSchema = z.object({
   quietMode: z.boolean().optional(),
   motto: z.string().max(200).optional(),
   name: z.string().min(1).max(80).optional(),
+  bioHtml: z.string().max(50000).optional(),
+  familyNote: z.string().max(10000).optional(),
+  themeId: z.string().max(40).optional(),
 });
 
 export async function PATCH(request: Request, { params }: Params) {
@@ -55,8 +59,17 @@ export async function PATCH(request: Request, { params }: Params) {
       ...(data.quietMode !== undefined && { quietMode: data.quietMode }),
       ...(data.motto !== undefined && { motto: sanitizeText(data.motto, 200) }),
       ...(data.name !== undefined && { name: sanitizeText(data.name, 80) }),
+      ...(data.bioHtml !== undefined && { bioHtml: sanitizeHtml(data.bioHtml) }),
+      ...(data.familyNote !== undefined && {
+        familyNote: sanitizeText(data.familyNote, 10000),
+      }),
+      ...(data.themeId !== undefined && {
+        themeId: sanitizeText(data.themeId, 40),
+      }),
     },
   });
 
-  return jsonOk({ updated: true });
+  const updated = await getMemorialBySlug(params.slug);
+  const publicData = updated ? memorialToPublicJson(updated, user) : null;
+  return jsonOk({ updated: true, memorial: publicData });
 }

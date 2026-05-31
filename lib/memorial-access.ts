@@ -4,6 +4,9 @@ import {
   Ritual,
   MemoryFragment,
   Reminder,
+  TimelineEvent,
+  FamilyPerson,
+  MemorialMedia,
 } from "@prisma/client";
 import { SessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -13,6 +16,9 @@ export type MemorialWithMembers = Memorial & {
   rituals: Ritual[];
   fragments: MemoryFragment[];
   reminders: Reminder[];
+  timelineEvents: TimelineEvent[];
+  familyPeople: FamilyPerson[];
+  mediaItems: MemorialMedia[];
 };
 
 export async function getMemorialBySlug(slug: string) {
@@ -23,6 +29,9 @@ export async function getMemorialBySlug(slug: string) {
       rituals: { orderBy: { createdAt: "desc" }, take: 100 },
       fragments: { orderBy: { createdAt: "desc" }, take: 100 },
       reminders: true,
+      timelineEvents: { orderBy: { sortOrder: "asc" } },
+      familyPeople: { orderBy: { sortOrder: "asc" } },
+      mediaItems: { orderBy: { sortOrder: "asc" } },
     },
   });
 }
@@ -71,9 +80,32 @@ export function memorialToPublicJson(
     birthDate: memorial.birthDate?.toISOString().slice(0, 10) ?? null,
     deathDate: memorial.deathDate.toISOString().slice(0, 10),
     motto: memorial.motto,
+    bioHtml: memorial.bioHtml,
+    familyNote: memorial.familyNote,
+    themeId: memorial.themeId,
     privacy: memorial.privacy,
     quietMode: memorial.quietMode,
     canEdit: edit,
+    timeline: memorial.timelineEvents.map((e) => ({
+      id: e.id,
+      yearLabel: e.yearLabel,
+      title: e.title,
+      description: e.description,
+    })),
+    family: memorial.familyPeople.map((p) => ({
+      id: p.id,
+      groupLabel: p.groupLabel,
+      name: p.name,
+      relation: p.relation,
+      avatarChar: p.avatarChar,
+    })),
+    gallery: memorial.mediaItems.map((m) => ({
+      id: m.id,
+      caption: m.caption,
+      emoji: m.emoji,
+      imageUrl: m.imageUrl,
+      yearLabel: m.yearLabel,
+    })),
     rituals: memorial.rituals.map((r) => {
       const showMessage =
         edit || memorial.privacy !== "public" || isMember(memorial, viewer?.email);
