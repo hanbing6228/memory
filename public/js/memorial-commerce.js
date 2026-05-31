@@ -216,6 +216,7 @@ window.MemorialCommerce = {
   toggleCart() {
     this.cartOpen = !this.cartOpen;
     document.getElementById("cart-drawer")?.classList.toggle("open", this.cartOpen);
+    document.getElementById("cart-backdrop")?.classList.toggle("open", this.cartOpen);
   },
 
   openCheckout() {
@@ -223,7 +224,17 @@ window.MemorialCommerce = {
       showToast("购物车为空");
       return;
     }
+    this.cartOpen = false;
+    document.getElementById("cart-drawer")?.classList.remove("open");
+    document.getElementById("cart-backdrop")?.classList.remove("open");
     document.getElementById("checkout-modal")?.classList.add("open");
+    const user = window.MemorialAuth?.user;
+    if (user) {
+      const emailEl = document.getElementById("co-email");
+      const nameEl = document.getElementById("co-name");
+      if (emailEl && !emailEl.value) emailEl.value = user.email;
+      if (nameEl && !nameEl.value && user.name) nameEl.value = user.name;
+    }
     const payRow = document.getElementById("checkout-pay-row");
     const inquiryOnly = document.getElementById("checkout-inquiry-only");
     if (payRow) {

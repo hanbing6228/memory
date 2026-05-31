@@ -4,6 +4,12 @@
 window.MemorialApi = {
   base: (window.MEMORIAL_CONFIG && window.MEMORIAL_CONFIG.apiBase) || "",
 
+  assetUrl(path) {
+    if (!path) return "";
+    if (path.startsWith("http://") || path.startsWith("https://")) return path;
+    return this.base + path;
+  },
+
   async request(path, options = {}) {
     const res = await fetch(this.base + path, {
       ...options,
@@ -191,5 +197,16 @@ window.MemorialApi = {
       method: "POST",
       body: JSON.stringify(payload),
     });
+  },
+
+  async updateProfile(payload) {
+    return this.request("/api/auth/me", {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async listMyMemorials() {
+    return this.request("/api/memorials");
   },
 };

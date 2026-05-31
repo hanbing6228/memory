@@ -10,6 +10,7 @@ import {
 } from "@prisma/client";
 import { SessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { publicAssetUrl } from "@/lib/public-url";
 
 export type MemorialWithMembers = Memorial & {
   members: MemorialMember[];
@@ -103,7 +104,7 @@ export function memorialToPublicJson(
       id: m.id,
       caption: m.caption,
       emoji: m.emoji,
-      imageUrl: m.imageUrl,
+      imageUrl: m.imageUrl ? publicAssetUrl(m.imageUrl) : null,
       yearLabel: m.yearLabel,
     })),
     rituals: memorial.rituals.map((r) => {

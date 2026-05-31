@@ -1,6 +1,7 @@
 import { mkdir, writeFile, unlink } from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
+import { publicAssetUrl } from "@/lib/public-url";
 
 const MAX_BYTES = 4 * 1024 * 1024;
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -32,7 +33,10 @@ export async function saveMemorialImage(
   const filename = `${id}${ext}`;
   await writeFile(path.join(dir, filename), buffer);
 
-  return { id, imageUrl: `/uploads/memorials/${slug}/${filename}` };
+  const imageUrl = publicAssetUrl(
+    `/uploads/memorials/${slug}/${filename}`
+  );
+  return { id, imageUrl };
 }
 
 export async function deleteMemorialImage(imageUrl: string | null | undefined) {

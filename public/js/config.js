@@ -1,7 +1,24 @@
 /**
- * Runtime config — leave apiBase empty on GitHub Pages (localStorage demo).
- * On Vercel/Render production, same-origin API is used automatically.
+ * API base: empty = same origin (Render/VPS/local).
+ * GitHub Pages static host must point at the production API.
  */
-window.MEMORIAL_CONFIG = {
-  apiBase: "",
-};
+(function () {
+  const host = location.hostname;
+  const isGitHubPages = host.endsWith(".github.io");
+  const isLocal =
+    host === "localhost" || host === "127.0.0.1" || host === "[::1]";
+
+  let apiBase = "";
+  if (isGitHubPages) {
+    apiBase = "https://nianguichu.onrender.com";
+  } else if (!isLocal) {
+    apiBase = "";
+  } else {
+    apiBase = "";
+  }
+
+  window.MEMORIAL_CONFIG = {
+    apiBase,
+    productionApi: "https://nianguichu.onrender.com",
+  };
+})();

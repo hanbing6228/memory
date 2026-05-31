@@ -32,7 +32,7 @@ window.MemorialAuth = {
     if (this.user) {
       const label = this.user.name || this.user.email.split("@")[0];
       slot.innerHTML = `
-        <span class="nav-auth-user" title="${MemorialStore.escapeHtml(this.user.email)}">${MemorialStore.escapeHtml(label)}</span>
+        <button type="button" class="nav-auth-user" title="${MemorialStore.escapeHtml(this.user.email)}" onclick="MemorialAuth.openAccount()">我的账户</button>
         <button type="button" class="nav-auth-btn" onclick="MemorialAuth.logout()">退出</button>
       `;
       return;
@@ -48,6 +48,15 @@ window.MemorialAuth = {
     this._mode = mode || "login";
     if (typeof goPage === "function") goPage("auth");
     this.renderAuthPage();
+  },
+
+  openAccount() {
+    if (!this.user) {
+      this.openPage("login");
+      return;
+    }
+    if (typeof goPage === "function") goPage("account");
+    this.renderAccountPage();
   },
 
   open(mode) {
@@ -134,15 +143,34 @@ window.MemorialAuth = {
         showToast("欢迎回来");
       } else {
         const name = document.getElementById("auth-name")?.value?.trim();
-        await MemorialApi.register({ email, password, name: name || undefined });
+        const reg = await MemorialApi.register({
+          email,
+          password,
+          name: name || undefined,
+        });
         showToast("注册成功");
+        await this.refresh();
+        this.close();
+        if (window.MemorialCore) {
+          await MemorialCore.onAuthChanged();
+        }
+        if (reg.memorialSlug && window.MemorialCore) {
+          await MemorialCore.loadMemorial(reg.memorialSlug);
+          goPage("profile-li");
+        } else {
+          goPage("account");
+          this.renderAccountPage();
+        }
+        return;
       }
       await this.refresh();
       this.close();
       if (window.MemorialCore) {
         await MemorialCore.onAuthChanged();
       }
-      goPage("profile-li");
+      if (isLogin) {
+        goPage("profile-li");
+      }
     } catch (e) {
       showToast(e.message || "操作失败");
     }
@@ -190,5 +218,76 @@ window.MemorialAuth = {
     if (this.user) return true;
     this.promptLogin(message);
     return false;
+  },
+
+  async renderAccountPage() {
+    const body = document.getElementById("account-page-body");
+    if (!body) return;
+    if (!this.user) {
+      body.innerHTML =
+        '<p class="p0-empty">请先 <button type="button" class="auth-link" onclick="MemorialAuth.openPage(\'login\')">登录</button></p>';
+      return;
+    }
+
+    body.innerHTML = `<p class="p0-empty">加载中…</p>`;
+
+    let memorials = [];
+    if (this.useApi) {
+      try {
+        const data = await MemorialApi.listMyMemorials();
+        memorials = data.memorials || [];
+      } catch (e) {
+        body.innerHTML = `<p class="p0-empty">${MemorialStore.escapeHtml(e.message)}</p>`;
+        return;
+      }
+    }
+
+    const memorialList =
+      memorials.length > 0
+        ? memorials
+            .map(
+              (m) => `
+        <div class="account-memorial-row">
+          <div>
+            <strong>${MemorialStore.escapeHtml(m.name)}</strong>
+            <span class="account-memorial-meta">${MemorialStore.escapeHtml(m.slug)} · ${m.privacy === "public" ? "公开" : m.privacy === "family" ? "家人" : "私密"}</span>
+          </div>
+          <button type="button" class="submit-btn" style="padding:8px 14px;font-size:13px" onclick="MemorialCore.openMemorial('${MemorialStore.escapeHtml(m.slug)}')">管理</button>
+        </div>`
+            )
+            .join("")
+        : `<p class="p0-empty">您还没有创建纪念馆，可点击下方按钮创建。</p>`;
+
+    body.innerHTML = `
+      <h2 class="auth-title">我的账户</h2>
+      <p class="auth-sub">管理个人资料与您创建的纪念馆</p>
+      <div class="auth-field"><label>邮箱</label><input type="email" value="${MemorialStore.escapeHtml(this.user.email)}" disabled /></div>
+      <div class="auth-field"><label>称呼</label><input id="account-name" type="text" value="${MemorialStore.escapeHtml(this.user.name || "")}" placeholder="您的姓名或昵称" /></div>
+      <button type="button" class="submit-btn auth-submit" onclick="MemorialAuth.saveAccount()">保存资料</button>
+      <h3 class="account-section-title">我的纪念馆</h3>
+      <div class="account-memorial-list">${memorialList}</div>
+      <button type="button" class="obit-back-btn" style="width:100%;margin-top:12px" onclick="MemorialCore.goCreate()">创建新纪念馆</button>
+      <button type="button" class="nav-auth-btn" style="width:100%;margin-top:12px" onclick="MemorialAuth.logout()">退出登录</button>
+    `;
+  },
+
+  async saveAccount() {
+    if (!this.useApi) {
+      showToast("请连接服务器后保存");
+      return;
+    }
+    const name = document.getElementById("account-name")?.value?.trim();
+    if (!name) {
+      showToast("请填写称呼");
+      return;
+    }
+    try {
+      const data = await MemorialApi.updateProfile({ name });
+      this.user = data.user;
+      this.renderNav();
+      showToast("资料已保存");
+    } catch (e) {
+      showToast(e.message || "保存失败");
+    }
   },
 };

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const ALLOWED_ORIGINS = [
   "https://hanbing6228.github.io",
+  "https://nianguichu.onrender.com",
   process.env.NEXT_PUBLIC_APP_URL,
 ].filter(Boolean) as string[];
 

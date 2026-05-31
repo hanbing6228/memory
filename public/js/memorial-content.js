@@ -120,8 +120,13 @@ window.MemorialContent = {
         ? `<div class="gallery-grid">` +
           items
             .map((item, idx) => {
-              const visual = item.imageUrl
-                ? `<img src="${this.escape(item.imageUrl)}" alt="${this.escape(item.caption)}" class="gallery-photo" onclick="MemorialContent.openGalleryLightbox(${idx})" />`
+              const imgSrc = item.imageUrl
+                ? window.MemorialApi
+                  ? MemorialApi.assetUrl(item.imageUrl)
+                  : item.imageUrl
+                : "";
+              const visual = imgSrc
+                ? `<img src="${this.escape(imgSrc)}" alt="${this.escape(item.caption)}" class="gallery-photo" onclick="MemorialContent.openGalleryLightbox(${idx})" loading="lazy" />`
                 : `<div class="gallery-placeholder" style="background:linear-gradient(135deg,#2d4a2a,#1a3a2a);min-height:140px;display:flex;align-items:center;justify-content:center;font-size:48px">${item.emoji || "📸"}</div>`;
               const del =
                 canEdit && item.id
@@ -146,7 +151,10 @@ window.MemorialContent = {
     if (!item?.imageUrl) return;
     const overlay = document.getElementById("gallery-lightbox");
     if (!overlay) return;
-    document.getElementById("gallery-lightbox-img").src = item.imageUrl;
+    const src = window.MemorialApi
+      ? MemorialApi.assetUrl(item.imageUrl)
+      : item.imageUrl;
+    document.getElementById("gallery-lightbox-img").src = src;
     document.getElementById("gallery-lightbox-cap").textContent =
       (item.caption || "") + (item.yearLabel ? " · " + item.yearLabel : "");
     overlay.classList.add("open");

@@ -429,11 +429,21 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
 .compare-table tr:hover td{background:var(--paper)}
 
 /* ===== FLOATING CART ===== */
-.cart-fab{position:fixed;bottom:20px;right:20px;width:50px;height:50px;background:var(--red);border-radius:50%;display:none;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);cursor:pointer;z-index:500;font-size:20px}
+.cart-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10050;display:none}
+.cart-backdrop.open{display:block}
+.cart-fab{position:fixed;bottom:20px;right:20px;width:50px;height:50px;background:var(--red);border-radius:50%;display:none;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.3);cursor:pointer;z-index:10070;font-size:20px;border:none;color:#fff}
 .cart-fab.show{display:flex}
 .cart-badge{position:absolute;top:-4px;right:-4px;background:var(--gold);color:#fff;width:18px;height:18px;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans SC',sans-serif}
-.cart-drawer{position:fixed;bottom:0;left:0;right:0;background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -8px 30px var(--shadowDeep);z-index:600;transform:translateY(100%);transition:transform .3s;max-height:70vh;overflow-y:auto}
+.cart-drawer{position:fixed;bottom:0;left:0;right:0;background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -8px 30px var(--shadowDeep);z-index:10080;transform:translateY(100%);transition:transform .3s;max-height:70vh;overflow-y:auto}
 .cart-drawer.open{transform:translateY(0)}
+.nav-cart-btn{padding:6px 10px;font-size:12px;background:var(--paper2);border:1px solid var(--paper3);border-radius:6px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;color:var(--ink2);white-space:nowrap}
+.nav-cart-btn:hover{background:var(--gold);color:#fff;border-color:var(--gold)}
+.account-section-title{font-family:'Noto Serif SC',serif;font-size:16px;margin:24px 0 12px;color:var(--ink)}
+.account-memorial-list{display:flex;flex-direction:column;gap:10px}
+.account-memorial-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;background:var(--paper2);border-radius:10px}
+.account-memorial-meta{display:block;font-size:12px;color:var(--ink2);margin-top:4px}
+.nav-auth-user{background:none;border:none;cursor:pointer;font-size:12px;color:var(--ink);font-family:'Noto Sans SC',sans-serif;padding:6px 8px}
+.nav-auth-user:hover{color:var(--gold)}
 .cart-head{padding:16px 20px;border-bottom:1px solid var(--paper3);display:flex;justify-content:space-between;align-items:center}
 .cart-head h4{font-family:'Ma Shan Zheng',cursive;font-size:18px;color:var(--ink)}
 .cart-close{width:28px;height:28px;border-radius:50%;background:var(--paper3);border:none;cursor:pointer;font-size:14px}
@@ -515,6 +525,7 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
       <div class="nav-link" onclick="goPage('guides')">丧葬百科</div>
       <div class="nav-link" onclick="goPage('pricing')">会员</div>
     </div>
+    <button type="button" class="nav-cart-btn" onclick="toggleCart()" title="购物车">🛒</button>
     <div id="nav-auth-slot" class="nav-auth-slot"></div>
     <button class="nav-btn" data-action="create-memorial">创建纪念馆</button>
   </div>
@@ -1021,6 +1032,13 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
   </div>
 </div>
 
+<!-- ==================== ACCOUNT PAGE ==================== -->
+<div class="page" id="page-account">
+  <div class="page-content auth-page" style="max-width:520px">
+    <div id="account-page-body"></div>
+  </div>
+</div>
+
 <!-- ==================== SHOP PAGE ==================== -->
 <div class="page" id="page-shop">
   <div class="page-content">
@@ -1187,9 +1205,9 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
     <div class="membook-tools">
       <div class="section-header"><div class="section-title">制作工具</div><div class="section-sub">六大功能，一键完成</div></div>
       <div class="membook-tools-grid">
-        <div class="membook-tool" onclick="showToast('照片整理工具即将上线')"><div class="membook-tool-icon">📸</div><div class="membook-tool-name">智能照片整理</div><div class="membook-tool-desc">自动按时间、场景整理照片，去重去模糊</div></div>
+        <div class="membook-tool" onclick="goPage('profile-li');switchTab(document.querySelector('#page-profile-li .profile-tab:nth-child(2)'),'tab-gallery-li')"><div class="membook-tool-icon">📸</div><div class="membook-tool-name">智能照片整理</div><div class="membook-tool-desc">在纪念馆相册上传与管理照片</div></div>
         <div class="membook-tool" onclick="goPage('obituary')"><div class="membook-tool-icon">✍️</div><div class="membook-tool-name">AI传记撰写</div><div class="membook-tool-desc">智能生成传记，可反复修改润色</div></div>
-        <div class="membook-tool" onclick="showToast('视频致敬功能即将上线')"><div class="membook-tool-icon">🎬</div><div class="membook-tool-name">视频致敬生成</div><div class="membook-tool-desc">照片+音乐自动生成感人视频</div></div>
+        <div class="membook-tool" onclick="goPage('obituary')"><div class="membook-tool-icon">🎬</div><div class="membook-tool-name">传记与讣告</div><div class="membook-tool-desc">使用 AI 讣告工具撰写并发布</div></div>
         <div class="membook-tool" onclick="goPage('profile-li')"><div class="membook-tool-icon">💬</div><div class="membook-tool-name">家族留言板</div><div class="membook-tool-desc">汇集家人朋友的留言融入纪念册</div></div>
         <div class="membook-tool" onclick="goPage('themes')"><div class="membook-tool-icon">🎨</div><div class="membook-tool-name">主题版式设计</div><div class="membook-tool-desc">50+中式版式，专业排版效果</div></div>
         <div class="membook-tool" onclick="showToast('印刷下单功能即将上线')"><div class="membook-tool-icon">🖨️</div><div class="membook-tool-name">一键印刷下单</div><div class="membook-tool-desc">支持精装、平装，全国物流配送</div></div>
@@ -1208,7 +1226,7 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
             <div class="membook-price-feature">✓ 在线分享链接</div>
             <div class="membook-price-feature">✓ 50页容量</div>
           </div>
-          <button class="membook-price-btn" style="background:var(--paper2);color:var(--ink)" onclick="showToast('即将开始制作')">开始制作</button>
+          <button class="membook-price-btn" style="background:var(--paper2);color:var(--ink)" onclick="goPage('obituary')">开始制作</button>
         </div>
         <div class="membook-price-card featured">
           <div class="membook-price-type" style="color:rgba(255,255,255,.6)">精装实体版</div>
@@ -1220,7 +1238,7 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
             <div class="membook-price-feature" style="color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.1)">✓ 全国包邮</div>
             <div class="membook-price-feature" style="color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.1)">✓ 100页容量</div>
           </div>
-          <button class="membook-price-btn" style="background:var(--gold);color:#fff" onclick="showToast('即将开始制作精装纪念册')">立即订制</button>
+          <button class="membook-price-btn" style="background:var(--gold);color:#fff" onclick="goPage('shop')">立即订制</button>
         </div>
       </div>
     </div>
@@ -1382,6 +1400,7 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
 </div>
 
 <!-- CART DRAWER -->
+<div class="cart-backdrop" id="cart-backdrop" onclick="toggleCart()"></div>
 <div class="cart-fab" id="cart-fab" onclick="toggleCart()">🛒<span class="cart-badge" id="cart-badge">0</span></div>
 <div class="cart-drawer" id="cart-drawer">
   <div class="cart-head"><h4>购物车</h4><button class="cart-close" onclick="toggleCart()">✕</button></div>
@@ -1408,7 +1427,7 @@ function goPage(id){
   if(pg){pg.classList.add('active');window.scrollTo(0,0);}
   const map={'home':0,'shop':1,'plaque':2,'tools':3,'guides':4,'pricing':5};
   const links=document.querySelectorAll('.nav-link');
-  const key=id.replace('profile-li','home').replace('profile-zhang','home').replace('profile-wang','home').replace('order-confirm','home').replace('auth','home');
+  const key=id.replace('profile-li','home').replace('profile-zhang','home').replace('profile-wang','home').replace('order-confirm','home').replace('auth','home').replace('account','home');
   if(map[key]!==undefined) links[map[key]].classList.add('active');
 }
 

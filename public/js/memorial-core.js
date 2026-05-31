@@ -777,6 +777,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (id === "plaque" && window.MemorialCommerce) {
         MemorialCommerce.updatePlaquePreview();
       }
+      if (id === "account" && window.MemorialAuth) {
+        MemorialAuth.renderAccountPage();
+      }
+      if (id === "planning" && typeof renderPlanning === "function") {
+        renderPlanning();
+        if (window.MemorialContent) {
+          MemorialContent.syncPlanningUI(MemorialContent.loadPlanningState());
+        }
+      }
     };
   }
 });
