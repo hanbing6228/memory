@@ -3,15 +3,22 @@ import { prisma } from "@/lib/db";
 import { jsonError, jsonOk } from "@/lib/api-response";
 import { sanitizeText } from "@/lib/sanitize";
 import { generateOrderNumber } from "@/lib/content-admin";
+import {
+  orderLinesToJson,
+  orderLinesToText,
+  orderLinesTotalCents,
+  resolveOrderLineItems,
+} from "@/lib/order-items";
 
 export const dynamic = "force-dynamic";
 
-const itemSchema = z.object({
-  slug: z.string(),
-  name: z.string(),
-  price: z.number().positive(),
-  qty: z.number().int().positive().default(1),
-});
+const itemSchema = z
+  .object({
+    slug: z.string().min(1).max(80),
+    qty: z.number().int().positive().max(99),
+    name: z.string().max(120).optional(),
+  })
+  .strict();
 
 const schema = z.object({
   contactEmail: z.string().email(),
@@ -33,13 +40,19 @@ export async function POST(request: Request) {
   if (!parsed.success) return jsonError("请完整填写收货与联系信息", 400);
 
   const data = parsed.data;
-  const totalCents = data.items.reduce(
-    (sum, i) => sum + Math.round(i.price * 100) * i.qty,
-    0
+  const resolved = await resolveOrderLineItems(
+    data.items.map((i) => ({
+      slug: i.slug,
+      qty: i.qty,
+      name: i.name,
+    }))
   );
-  const itemsText = data.items
-    .map((i) => `${i.name} x${i.qty} ¥${(i.price * i.qty).toFixed(0)}`)
-    .join("；");
+  if ("error" in resolved) return jsonError(resolved.error, 400);
+
+  const lines = resolved.items;
+  const totalCents = orderLinesTotalCents(lines);
+  const itemsText = orderLinesToText(lines);
+  const itemsJson = orderLinesToJson(lines);
 
   const orderNumber = generateOrderNumber();
 
@@ -54,11 +67,11 @@ export async function POST(request: Request) {
       const session = await stripe.checkout.sessions.create({
         mode: "payment",
         customer_email: data.contactEmail,
-        line_items: data.items.map((i) => ({
+        line_items: lines.map((i) => ({
           quantity: i.qty,
           price_data: {
             currency: "cny",
-            unit_amount: Math.round(i.price * 100),
+            unit_amount: i.priceCents,
             product_data: { name: i.name },
           },
         })),
@@ -80,7 +93,7 @@ export async function POST(request: Request) {
             ? sanitizeText(data.shippingPostal, 20)
             : null,
           items: sanitizeText(itemsText, 2000),
-          itemsJson: JSON.stringify(data.items),
+          itemsJson: JSON.stringify(itemsJson),
           note: data.note ? sanitizeText(data.note, 2000) : null,
           memorialSlug: data.memorialSlug
             ? sanitizeText(data.memorialSlug, 80)
@@ -116,7 +129,7 @@ export async function POST(request: Request) {
         ? sanitizeText(data.shippingPostal, 20)
         : null,
       items: sanitizeText(itemsText, 2000),
-      itemsJson: JSON.stringify(data.items),
+      itemsJson: JSON.stringify(itemsJson),
       note: data.note ? sanitizeText(data.note, 2000) : null,
       memorialSlug: data.memorialSlug
         ? sanitizeText(data.memorialSlug, 80)

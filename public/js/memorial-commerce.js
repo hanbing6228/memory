@@ -262,9 +262,8 @@ window.MemorialCommerce = {
       memorialSlug: window.MemorialCore?.slug,
       items: this.cart.map((i) => ({
         slug: i.slug,
-        name: i.name,
-        price: i.price,
         qty: i.qty,
+        name: i.name,
       })),
       paymentMethod: paymentMethod || "inquiry",
     };
@@ -357,7 +356,7 @@ window.MemorialCommerce = {
 function addToCart(name, price) {
   const p = MemorialCommerce.products.find((x) => x.name === name);
   if (p) MemorialCommerce.addToCart(p);
-  else MemorialCommerce.addToCart({ slug: "custom", name, price: parseInt(price, 10), qty: 1 });
+  else showToast("该商品暂不可下单，请从商城选择");
 }
 
 function filterShop(el, cat) {

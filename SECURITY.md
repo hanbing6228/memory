@@ -3,6 +3,7 @@
 ## 已做
 
 - API 路由：`sanitize-html` 过滤用户输入；JWT httpOnly cookie；纪念馆按 privacy + member 隔离
+- 订单：`POST /api/orders` 按商品 `slug` 从数据库取价，忽略客户端传入的价格
 - API 响应头：`X-Content-Type-Options`、`X-Frame-Options`、`Referrer-Policy`
 - Cron：`CRON_SECRET` Bearer 鉴权
 - Next.js 已升级至 **14.2.35**（修复 14.2.5 已知 CVE）
