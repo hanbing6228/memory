@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [ -f .deploy-version ]; then
+  echo "Starting nianguichu build ${RENDER_GIT_COMMIT:-$(cat .deploy-version)}"
+fi
+
 # Free Postgres may need a moment to accept connections on cold start.
 attempt=1
 max=15

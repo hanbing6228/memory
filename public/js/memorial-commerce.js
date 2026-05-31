@@ -38,6 +38,8 @@ window.MemorialCommerce = {
       { slug: "memorial-album", name: "精装纪念相册", price: 688, category: "gift", emoji: "📖", bg: "linear-gradient(135deg,#e8e8f5,#d8d8ed)", description: "30页硬壳相册，含排版服务。" },
       { slug: "memorial-tree", name: "代为种植纪念树", price: 168, category: "plant", emoji: "🌳", bg: "linear-gradient(135deg,#e8f5e8,#d0edd0)", badge: "环保", description: "附证书与坐标。" },
       { slug: "qr-plaque", name: "QR二维码铭牌", price: 388, category: "gift", emoji: "📱", bg: "linear-gradient(135deg,#1a1a1a,#2a2a2a)", description: "不锈钢激光蚀刻，扫码直达纪念馆。" },
+      { slug: "brass-plaque", name: "黄铜典藏铭牌", price: 588, category: "gift", emoji: "🥉", bg: "linear-gradient(135deg,#8b6914,#5a4010)", description: "铸造黄铜磨砂工艺，含红木底座。" },
+      { slug: "stainless-plaque", name: "经典不锈钢铭牌", price: 298, category: "gift", emoji: "🪨", bg: "linear-gradient(135deg,#c8c8c8,#888)", description: "304不锈钢，8×5cm，附安装配件。" },
     ];
   },
 
@@ -70,12 +72,13 @@ window.MemorialCommerce = {
   },
 
   renderShopGrids() {
-    const shop = document.getElementById("shop-products-grid");
-    if (shop) {
-      shop.innerHTML = this.products
-        .map((p) => this.productCard(p, "MemorialCommerce.openProduct"))
-        .join("");
-    }
+    const html = this.products
+      .map((p) => this.productCard(p, "MemorialCommerce.openProduct"))
+      .join("");
+    ["shop-products-grid", "shop-page-grid"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = html || '<p class="p0-empty" style="padding:24px;grid-column:1/-1">暂无商品</p>';
+    });
     const qr = document.getElementById("qr-products-grid");
     if (qr) {
       const qrProducts = this.products.filter((p) =>
@@ -103,10 +106,54 @@ window.MemorialCommerce = {
   filterShop(cat, el) {
     document.querySelectorAll(".shop-cat").forEach((t) => t.classList.remove("active"));
     if (el) el.classList.add("active");
-    document.querySelectorAll("#shop-products-grid .product-card").forEach((card) => {
-      card.style.display =
-        cat === "all" || card.dataset.cat === cat ? "block" : "none";
-    });
+    document
+      .querySelectorAll("#shop-products-grid .product-card, #shop-page-grid .product-card")
+      .forEach((card) => {
+        card.style.display =
+          cat === "all" || card.dataset.cat === cat ? "block" : "none";
+      });
+  },
+
+  updatePlaquePreview() {
+    const name = document.getElementById("plaque-name")?.value?.trim() || "—";
+    const years = document.getElementById("plaque-years")?.value?.trim() || "";
+    const quote =
+      document.getElementById("plaque-inscription")?.value?.trim() || "";
+    const nameEl = document.getElementById("plaque-preview-name");
+    const yearsEl = document.getElementById("plaque-preview-years");
+    const quoteEl = document.getElementById("plaque-preview-quote");
+    if (nameEl) nameEl.textContent = name;
+    if (yearsEl) yearsEl.textContent = years;
+    if (quoteEl) quoteEl.textContent = quote;
+
+    const qrWrap = document.getElementById("plaque-preview-qr");
+    const slug = window.MemorialCore?.slug || "li-mingde";
+    if (qrWrap && window.MemorialCore?.useApi && window.MemorialApi) {
+      qrWrap.innerHTML = `<img src="${MemorialApi.base}/api/memorials/${encodeURIComponent(slug)}/qr" alt="纪念馆二维码" width="88" height="88" style="background:#fff;padding:6px;border-radius:6px;margin-bottom:12px" onerror="this.outerHTML='📱'"/>`;
+    } else if (qrWrap) {
+      qrWrap.innerHTML = '<div style="font-size:48px;margin-bottom:12px">📱</div>';
+    }
+  },
+
+  addPlaqueToCart() {
+    const slug = document.getElementById("plaque-material")?.value || "qr-plaque";
+    const base = this.findProduct(slug);
+    if (!base) {
+      showToast("请选择铭牌材质");
+      return;
+    }
+    const name = document.getElementById("plaque-name")?.value?.trim() || "";
+    const years = document.getElementById("plaque-years")?.value?.trim() || "";
+    const inscription =
+      document.getElementById("plaque-inscription")?.value?.trim() || "";
+    const label = name ? `${base.name}（${name}）` : base.name;
+    const custom = {
+      ...base,
+      name: label,
+      plaqueMeta: { name, years, inscription, materialSlug: slug },
+    };
+    this.addToCart(custom);
+    showToast("铭牌已加入购物车，结算时可填写收货地址");
   },
 
   findProduct(slug) {

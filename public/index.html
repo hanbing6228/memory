@@ -482,6 +482,23 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
 .gallery-lightbox img{max-width:100%;max-height:70vh;border-radius:8px}
 .gallery-lightbox p{color:#fff;margin-top:12px;font-size:14px}
 .gallery-lightbox-close{position:absolute;top:20px;right:20px;background:#fff;border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:18px}
+.auth-page{padding:48px 20px 80px;max-width:420px;margin:0 auto}
+.auth-page .auth-title{text-align:center;margin-bottom:8px}
+.auth-page .auth-sub{text-align:center;margin-bottom:20px}
+.tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:20px}
+.tool-card{background:#fff;border-radius:14px;padding:20px 16px;text-align:center;border:1px solid var(--paper3);cursor:pointer;box-shadow:0 2px 12px var(--shadow)}
+.tool-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+.tool-card-icon{font-size:32px;margin-bottom:8px}
+.tool-card-name{font-size:15px;font-weight:600;margin-bottom:4px}
+.tool-card-desc{font-size:12px;color:var(--ink2);font-family:'Noto Sans SC',sans-serif;line-height:1.6}
+.plaque-maker{padding:20px;display:grid;gap:20px;max-width:720px;margin:0 auto}
+.plaque-form{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px var(--shadow)}
+.plaque-preview{background:linear-gradient(135deg,#2a2a2a,#1a1a1a);border-radius:14px;padding:24px;text-align:center;color:#e8dcc8;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.plaque-preview-name{font-family:'Ma Shan Zheng',cursive;font-size:28px}
+.plaque-preview-years{font-size:14px;opacity:.85}
+.plaque-preview-quote{font-size:13px;opacity:.75;max-width:260px;line-height:1.8}
+.shop-page-hero{padding:40px 20px 16px;text-align:center}
+.shop-page-hero h1{font-family:'Ma Shan Zheng',cursive;font-size:28px}
 </style>
 </head>
 <body>
@@ -492,12 +509,10 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
     <div class="nav-logo" onclick="goPage('home')">念归处 <span>NIANGUICHU</span></div>
     <div class="nav-links">
       <div class="nav-link active" onclick="goPage('home')">首页</div>
-      <div class="nav-link" onclick="goPage('themes')">主题模板</div>
-      <div class="nav-link" onclick="goPage('obituary')">撰写讣告</div>
-      <div class="nav-link" onclick="goPage('planning')">葬礼规划</div>
+      <div class="nav-link" onclick="goPage('shop')">纪念商城</div>
+      <div class="nav-link" onclick="goPage('plaque')">铭牌定制</div>
+      <div class="nav-link" onclick="goPage('tools')">在线工具</div>
       <div class="nav-link" onclick="goPage('guides')">丧葬百科</div>
-      <div class="nav-link" onclick="goPage('qr')">QR铭牌</div>
-      <div class="nav-link" onclick="goPage('membook')">纪念册</div>
       <div class="nav-link" onclick="goPage('pricing')">会员</div>
     </div>
     <div id="nav-auth-slot" class="nav-auth-slot"></div>
@@ -999,6 +1014,91 @@ body{font-family:'Noto Serif SC',serif;background:var(--paper);color:var(--ink);
   </div>
 </div>
 
+<!-- ==================== AUTH PAGE ==================== -->
+<div class="page" id="page-auth">
+  <div class="page-content auth-page">
+    <div id="auth-page-body"></div>
+  </div>
+</div>
+
+<!-- ==================== SHOP PAGE ==================== -->
+<div class="page" id="page-shop">
+  <div class="page-content">
+    <div class="shop-page-hero">
+      <h1>纪念商城</h1>
+      <p style="font-size:14px;color:var(--ink2);margin-top:8px">鲜花、香品、纪念礼品与 QR 铭牌 — 全国配送</p>
+    </div>
+    <div style="padding:0 20px 60px">
+      <div class="shop-trust">
+        <div class="shop-trust-item"><span>🚚</span><span>全国包邮</span></div>
+        <div class="shop-trust-item"><span>🎀</span><span>精美包装</span></div>
+        <div class="shop-trust-item"><span>🌸</span><span>当日发货</span></div>
+        <div class="shop-trust-item"><span>💝</span><span>品质保证</span></div>
+      </div>
+      <div class="shop-cats" id="shop-page-cats">
+        <div class="shop-cat active" onclick="filterShop(this,'all')">全部</div>
+        <div class="shop-cat" onclick="filterShop(this,'flower')">鲜花花圈</div>
+        <div class="shop-cat" onclick="filterShop(this,'candle')">蜡烛香品</div>
+        <div class="shop-cat" onclick="filterShop(this,'gift')">纪念礼品</div>
+        <div class="shop-cat" onclick="filterShop(this,'plant')">种植纪念树</div>
+      </div>
+      <div class="products-grid" id="shop-page-grid">
+        <p class="p0-empty" style="padding:24px;grid-column:1/-1">加载商品…</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PLAQUE MAKER PAGE ==================== -->
+<div class="page" id="page-plaque">
+  <div class="page-content">
+    <div class="guides-hero">
+      <h1>铭牌定制</h1>
+      <p>填写刻字信息，预览效果，一键加入购物车</p>
+    </div>
+    <div class="plaque-maker">
+      <div class="plaque-form">
+        <div class="auth-field"><label>逝者姓名</label><input id="plaque-name" type="text" value="李明德" oninput="MemorialCommerce.updatePlaquePreview()" /></div>
+        <div class="auth-field"><label>生卒年份</label><input id="plaque-years" type="text" value="1938 — 2023" oninput="MemorialCommerce.updatePlaquePreview()" /></div>
+        <div class="auth-field"><label>材质</label>
+          <select id="plaque-material" onchange="MemorialCommerce.updatePlaquePreview()">
+            <option value="stainless-plaque">不锈钢铭牌 ¥298</option>
+            <option value="brass-plaque">黄铜典藏铭牌 ¥588</option>
+            <option value="qr-plaque">QR二维码铭牌 ¥388</option>
+          </select>
+        </div>
+        <div class="auth-field"><label>刻字内容（挽联/诗句）</label><textarea id="plaque-inscription" rows="3" oninput="MemorialCommerce.updatePlaquePreview()">春蚕到死丝方尽，蜡炬成灰泪始干</textarea></div>
+        <button type="button" class="submit-btn" style="width:100%" onclick="MemorialCommerce.addPlaqueToCart()">加入购物车</button>
+        <button type="button" class="obit-back-btn" style="width:100%;margin-top:10px" onclick="goPage('shop')">浏览更多商品</button>
+      </div>
+      <div class="plaque-preview" id="plaque-preview">
+        <div id="plaque-preview-qr"></div>
+        <div class="plaque-preview-name" id="plaque-preview-name">李明德</div>
+        <div class="plaque-preview-years" id="plaque-preview-years">1938 — 2023</div>
+        <div class="plaque-preview-quote" id="plaque-preview-quote">春蚕到死丝方尽，蜡炬成灰泪始干</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TOOLS PAGE ==================== -->
+<div class="page" id="page-tools">
+  <div class="page-content">
+    <div class="guides-hero">
+      <h1>在线工具</h1>
+      <p>讣告撰写、葬礼规划、纪念册与更多实用功能</p>
+    </div>
+    <div class="tools-grid">
+      <div class="tool-card" onclick="goPage('obituary')"><div class="tool-card-icon">✍️</div><div class="tool-card-name">AI 讣告撰写</div><div class="tool-card-desc">三步生成感人讣告并发布到纪念馆</div></div>
+      <div class="tool-card" onclick="goPage('planning')"><div class="tool-card-icon">📋</div><div class="tool-card-name">葬礼规划清单</div><div class="tool-card-desc">24 项任务清单，有序料理后事</div></div>
+      <div class="tool-card" onclick="goPage('membook')"><div class="tool-card-icon">📖</div><div class="tool-card-name">纪念册制作</div><div class="tool-card-desc">智能排版，支持数字版与精装印刷</div></div>
+      <div class="tool-card" onclick="goPage('themes')"><div class="tool-card-icon">🎨</div><div class="tool-card-name">主题模板</div><div class="tool-card-desc">50+ 中式纪念馆主题</div></div>
+      <div class="tool-card" onclick="goPage('qr')"><div class="tool-card-icon">📱</div><div class="tool-card-name">QR 铭牌介绍</div><div class="tool-card-desc">了解材质与订购流程</div></div>
+      <div class="tool-card" onclick="goPage('guides')"><div class="tool-card-icon">📚</div><div class="tool-card-name">丧葬百科</div><div class="tool-card-desc">礼仪、疗愈与身后事务指南</div></div>
+    </div>
+  </div>
+</div>
+
 <!-- ==================== QR PAGE ==================== -->
 <div class="page" id="page-qr">
   <div class="page-content">
@@ -1306,9 +1406,9 @@ function goPage(id){
   document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
   const pg = document.getElementById(id.startsWith('page-')?id:'page-'+id);
   if(pg){pg.classList.add('active');window.scrollTo(0,0);}
-  const map={'home':0,'themes':1,'obituary':2,'planning':3,'guides':4,'qr':5,'membook':6,'pricing':7};
+  const map={'home':0,'shop':1,'plaque':2,'tools':3,'guides':4,'pricing':5};
   const links=document.querySelectorAll('.nav-link');
-  const key=id.replace('profile-li','home').replace('profile-zhang','home').replace('profile-wang','home').replace('order-confirm','home');
+  const key=id.replace('profile-li','home').replace('profile-zhang','home').replace('profile-wang','home').replace('order-confirm','home').replace('auth','home');
   if(map[key]!==undefined) links[map[key]].classList.add('active');
 }
 

@@ -1,7 +1,7 @@
 -- AlterTable
-ALTER TABLE "Memorial" ADD COLUMN "bioHtml" TEXT,
-ADD COLUMN "familyNote" TEXT,
-ADD COLUMN "themeId" TEXT NOT NULL DEFAULT 'ink-default';
+ALTER TABLE "Memorial" ADD COLUMN IF NOT EXISTS "bioHtml" TEXT;
+ALTER TABLE "Memorial" ADD COLUMN IF NOT EXISTS "familyNote" TEXT;
+ALTER TABLE "Memorial" ADD COLUMN IF NOT EXISTS "themeId" TEXT NOT NULL DEFAULT 'ink-default';
 
 -- CreateTable
 CREATE TABLE "TimelineEvent" (

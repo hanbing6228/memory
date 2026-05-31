@@ -8,10 +8,19 @@ async function main() {
     where: { email: "demo@nianguichu.local" },
     select: { id: true },
   });
-  if (demo) {
-    console.log("Seed skipped — demo user already exists");
+
+  let productCount = 0;
+  try {
+    productCount = await prisma.product.count();
+  } catch {
+    // Product table may not exist yet during first migrate
+  }
+
+  if (demo && productCount > 0) {
+    console.log("Seed skipped — demo user and catalog already exist");
     return;
   }
+
   console.log("Running seed…");
   execSync("npm run seed", { stdio: "inherit" });
 }

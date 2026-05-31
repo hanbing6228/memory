@@ -768,6 +768,15 @@ document.addEventListener("DOMContentLoaded", () => {
         MemorialContent.renderArticlesGrid("guides-articles-grid");
         MemorialContent.renderGuidesAdmin();
       }
+      if (id === "auth" && window.MemorialAuth) {
+        MemorialAuth.renderAuthPage();
+      }
+      if (id === "shop" && window.MemorialCommerce) {
+        MemorialCommerce.renderShopGrids();
+      }
+      if (id === "plaque" && window.MemorialCommerce) {
+        MemorialCommerce.updatePlaquePreview();
+      }
     };
   }
 });
