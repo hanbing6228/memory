@@ -60,4 +60,33 @@ window.MemorialDemoContent = {
       ],
     },
   },
+  "zhang-xiuying": {
+    en: {
+      name: "Zhang Xiuying",
+      motto: "Mother's hand-rolled noodles were the finest taste in the world.",
+      bioHtml:
+        "<p>Ms. Zhang Xiuying (1945–2022) was born in Xiangtan, Hunan, and passed away peacefully at home in Changsha at age 77.</p><p>She raised three children alone after her husband's early death, supporting the family with work at a textile mill and a reputation for noodles that drew neighbors to her kitchen.</p><p>In later years she tended roses and told her grandchildren: \"No matter how hard the day, make the meal, hold the home.\"</p>",
+      familyNote:
+        "We will never forget your hands tucking us in at night. — her children",
+    },
+  },
+  "wang-shulan": {
+    en: {
+      name: "Wang Shulan",
+      motto: "A century of grace, at peace at last.",
+      bioHtml:
+        "<p>Ms. Wang Shulan (1929–2021) lived through decades of change with quiet strength. Born in Wuxi, she taught primary school in Nanjing and loved Kunqu opera and brush-journal writing.</p><p>She often told her grandchildren: \"A peaceful life is its own blessing.\"</p>",
+      familyNote: "Grandmother, we will tell your stories to the next generation.",
+    },
+  },
+  "chen-meihua": {
+    en: {
+      name: "Chen Meihua",
+      motto: "Blossoms have their season; love does not end.",
+      bioHtml:
+        "<p>Ms. Chen Meihua (1940–2025) was a county nurse before marrying Professor Li Mingde. For forty years she tended a courtyard of roses in Beijing, wrapping cut stems for neighbors with handwritten care notes.</p><p>She left in spring, in blossom season, surrounded by family.</p>",
+      familyNote:
+        "Mother, the roses bloomed again this year—we are watering them for you.",
+    },
+  },
 };

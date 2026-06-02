@@ -230,7 +230,7 @@ async function main() {
       bioHtml: DEMO_BIO,
       familyNote: DEMO_FAMILY_NOTE,
       themeId: "ink-default",
-      privacy: "family",
+      privacy: "public",
       quietMode: true,
       members: { create: { email, role: "owner" } },
       rituals: {
@@ -258,10 +258,53 @@ async function main() {
       bioHtml: DEMO_BIO,
       familyNote: DEMO_FAMILY_NOTE,
       themeId: "ink-default",
+      privacy: "public",
     },
   });
 
   await seedMemorialContent(memorial.id);
+
+  const showcase = [
+    {
+      slug: "zhang-xiuying",
+      name: "张秀英",
+      birthDate: new Date("1945-03-12"),
+      deathDate: new Date("2022-08-20"),
+      motto: "妈妈的手擀面，是世间最美的味道",
+      themeId: "peach-spring",
+    },
+    {
+      slug: "wang-shulan",
+      name: "王淑兰",
+      birthDate: new Date("1929-11-05"),
+      deathDate: new Date("2021-04-18"),
+      motto: "经历百年风华，安然归于平静",
+      themeId: "bailu",
+    },
+    {
+      slug: "chen-meihua",
+      name: "陈美华",
+      birthDate: new Date("1940-06-18"),
+      deathDate: new Date("2025-03-22"),
+      motto: "花开有时，爱无绝期",
+      themeId: "plum-snow",
+    },
+  ];
+
+  for (const s of showcase) {
+    await prisma.memorial.upsert({
+      where: { slug: s.slug },
+      create: {
+        ...s,
+        ownerId: user.id,
+        bioHtml: `<p>${s.name}纪念馆示范内容，由念归处演示数据生成。</p>`,
+        privacy: "public",
+        quietMode: true,
+        members: { create: { email, role: "owner" } },
+      },
+      update: { privacy: "public", motto: s.motto, themeId: s.themeId },
+    });
+  }
   await seedArticles();
   await seedProducts();
 

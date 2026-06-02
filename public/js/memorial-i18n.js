@@ -534,6 +534,25 @@ window.MemorialI18n = {
     const stored = localStorage.getItem(this.STORAGE_KEY);
     if (stored === "en" || stored === "zh") this.lang = stored;
     this.syncCopy();
+    this.bindLangButton();
+  },
+
+  bindLangButton() {
+    const attach = () => {
+      const btn = document.getElementById("lang-toggle");
+      if (!btn || btn.dataset.i18nBound === "1") return;
+      btn.dataset.i18nBound = "1";
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.toggle();
+      });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", attach);
+    } else {
+      attach();
+    }
   },
 
   isEn() {
@@ -838,6 +857,9 @@ window.MemorialI18n = {
       MemorialMembook.renderPage();
       if (wasReading) MemorialMembook.renderReader();
     }
+    if (window.MemorialContent?.loadHomeMemorials) {
+      MemorialContent.loadHomeMemorials(!!window.MemorialCore?.useApi);
+    }
     if (window.MemorialCore?.refreshMemorialUI) {
       MemorialCore.refreshMemorialUI();
     }
@@ -847,6 +869,7 @@ window.MemorialI18n = {
 MemorialI18n.bootstrap();
 
 document.addEventListener("DOMContentLoaded", () => {
+  MemorialI18n.bindLangButton();
   MemorialI18n.apply();
 });
 

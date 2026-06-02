@@ -25,6 +25,11 @@ window.MemorialCore = {
       await MemorialAuth.init(this.useApi);
     }
     if (this.useApi) await this.hydrateFromApi();
+    if (window.MemorialStore?.showcaseMemorialTemplates) {
+      Object.keys(MemorialStore.showcaseMemorialTemplates()).forEach((slug) =>
+        MemorialStore.ensureShowcaseMemorial(slug)
+      );
+    }
     this.refreshMemorialUI();
     if (window.MemorialContent) {
       MemorialContent.loadHomeMemorials(this.useApi);
@@ -157,9 +162,17 @@ window.MemorialCore = {
         this._needsLogin = true;
         this.canEdit = false;
         console.warn("API hydrate needs login:", e.message);
+        if (window.MemorialStore?.get(this.slug)) {
+          this.refreshMemorialUI();
+        }
         return;
       }
       console.warn("API hydrate skipped:", e.message);
+      if (window.MemorialStore?.get(this.slug)) {
+        this._needsLogin = false;
+        this.refreshMemorialUI();
+        return;
+      }
       this.useApi = false;
       this._needsLogin = false;
     }
@@ -173,7 +186,16 @@ window.MemorialCore = {
 
   openMemorial(slug) {
     if (typeof goPage === "function") goPage("profile-li");
-    this.loadMemorial(slug).catch(console.error);
+    this.slug = slug;
+    if (window.MemorialStore?.ensureShowcaseMemorial) {
+      MemorialStore.ensureShowcaseMemorial(slug);
+    }
+    this.loadMemorial(slug).catch((e) => {
+      console.warn("openMemorial:", e.message);
+      if (window.MemorialStore?.get(slug)) {
+        this.refreshMemorialUI();
+      }
+    });
   },
 
   async publishObituary(html) {

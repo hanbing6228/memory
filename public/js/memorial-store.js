@@ -127,6 +127,100 @@ window.MemorialStore = {
     return true;
   },
 
+  showcaseMemorialTemplates() {
+    const li = this.defaultMemorial();
+    return {
+      "li-mingde": li,
+      "zhang-xiuying": {
+        slug: "zhang-xiuying",
+        name: "张秀英",
+        birthDate: "1945-03-12",
+        deathDate: "2022-08-20",
+        motto: "妈妈的手擀面，是世间最美的味道",
+        bioHtml:
+          "<p>张秀英女士，1945年生于湖南湘潭，2022年于长沙家中安详离世，享年77岁。</p><p>她一生勤俭持家，厨艺精湛，邻里皆知她手擀面的香气。丈夫早逝后，她独自抚养三个孩子，从未抱怨。</p><p>晚年喜爱养花，尤其月季。她说：「日子再难，也要把饭做好，把家撑住。」</p>",
+        familyNote: "妈妈，我们永远记得您深夜为我们掖被角的手。",
+        themeId: "peach-spring",
+        privacy: "public",
+        quietMode: true,
+        timeline: [
+          { yearLabel: "1945年", title: "出生于湘潭", description: "农家三女，自幼帮厨" },
+          { yearLabel: "1970年", title: "迁居长沙", description: "在纺织厂工作三十年" },
+          { yearLabel: "2022年", title: "家中辞世", description: "子女环绕，安详离去" },
+        ],
+        family: [
+          { groupLabel: "子女", name: "张建国", relation: "长子", avatarChar: "建" },
+          { groupLabel: "子女", name: "张丽", relation: "次女", avatarChar: "丽" },
+        ],
+        gallery: [{ caption: "厨房旧照", emoji: "🍜", yearLabel: "1990年" }],
+        rituals: [],
+        fragments: [],
+        reminders: [],
+        tributeCounts: { 蜡烛: 2108, 鲜花: 1802, 焚香: 920, 贡品: 640, 心语: 3100 },
+      },
+      "wang-shulan": {
+        slug: "wang-shulan",
+        name: "王淑兰",
+        birthDate: "1929-11-05",
+        deathDate: "2021-04-18",
+        motto: "经历百年风华，安然归于平静",
+        bioHtml:
+          "<p>王淑兰女士，1929年生于江苏无锡，2021年在南京辞世，享年92岁。</p><p>她亲历时代变迁，始终以温和与坚韧面对一切。晚年喜爱听昆曲、写毛笔日记，常对孙辈说：「人这一辈子，平安就是福。」</p>",
+        familyNote: "祖母，您的故事我们会讲给下一代听。",
+        themeId: "bailu",
+        privacy: "public",
+        quietMode: true,
+        timeline: [
+          { yearLabel: "1929年", title: "出生于无锡", description: "" },
+          { yearLabel: "1955年", title: "迁居南京", description: "任教小学语文" },
+          { yearLabel: "2021年", title: "安然离世", description: "" },
+        ],
+        family: [{ groupLabel: "孙辈", name: "王浩然", relation: "孙子", avatarChar: "浩" }],
+        gallery: [],
+        rituals: [],
+        fragments: [],
+        reminders: [],
+        tributeCounts: { 蜡烛: 1876, 鲜花: 1540, 焚香: 1100, 贡品: 800, 心语: 2200 },
+      },
+      "chen-meihua": {
+        slug: "chen-meihua",
+        name: "陈美华",
+        birthDate: "1940-06-18",
+        deathDate: "2025-03-22",
+        motto: "花开有时，爱无绝期",
+        bioHtml:
+          "<p>陈美华女士，1940年生于苏州，2025年春于北京家中离世，享年85岁。</p><p>青年时在县医院做护士，婚后与李明德先生相伴五十六年。她种玫瑰、写养护笔记，把温柔给了每一位来讨花的邻居。</p>",
+        familyNote: "母亲，后院的花今年又开了，我们替您浇着。",
+        themeId: "plum-snow",
+        privacy: "public",
+        quietMode: true,
+        timeline: [
+          { yearLabel: "1940年", title: "出生于苏州", description: "" },
+          { yearLabel: "1968年", title: "与李明德成婚", description: "" },
+          { yearLabel: "2025年", title: "花季中离去", description: "" },
+        ],
+        family: [
+          { groupLabel: "配偶", name: "李明德", relation: "丈夫", avatarChar: "明" },
+          { groupLabel: "孙辈", name: "李小雨", relation: "孙女", avatarChar: "雨" },
+        ],
+        gallery: [{ caption: "南院玫瑰", emoji: "🌹", yearLabel: "2018年" }],
+        rituals: [],
+        fragments: [],
+        reminders: [],
+        tributeCounts: { 蜡烛: 1542, 鲜花: 2100, 焚香: 980, 贡品: 720, 心语: 2800 },
+      },
+    };
+  },
+
+  ensureShowcaseMemorial(slug) {
+    const templates = this.showcaseMemorialTemplates();
+    const tpl = templates[slug];
+    if (!tpl) return;
+    if (!this.get(slug)) {
+      this.update(slug, tpl);
+    }
+  },
+
   createMemorial({ name, birthDate, deathDate, motto, privacy, quietMode }) {
     const slug =
       "m_" +

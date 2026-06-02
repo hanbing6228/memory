@@ -2,6 +2,70 @@
  * Dynamic profile tabs, themes, home grid, QR, articles
  */
 window.MemorialContent = {
+  /** 首页固定展示的示范纪念馆（API 模式下也会显示，不被公开列表覆盖） */
+  HOME_SHOWCASE: [
+    {
+      slug: "li-mingde",
+      avatarChar: "明",
+      headerGrad: "linear-gradient(135deg,#1a3a2a,#2d5a3a)",
+      avatarGrad: "linear-gradient(135deg,#4a7a5a,#2d5a3a)",
+      nameZh: "李明德",
+      nameEn: "Li Mingde",
+      yearsZh: "1938 — 2023 · 享年85岁",
+      yearsEn: "1938 — 2023 · age 85",
+      quoteZh: "春蚕到死丝尽，蜡炬成灰泪始干",
+      quoteEn: "The silkworm spins until death; the candle weeps until ash.",
+      actsZh: "🕯️ 3,247 次祭拜",
+      actsEn: "🕯️ 3,247 tributes",
+      featured: true,
+    },
+    {
+      slug: "zhang-xiuying",
+      avatarChar: "秀",
+      headerGrad: "linear-gradient(135deg,#3a1a2a,#5a2a3a)",
+      avatarGrad: "linear-gradient(135deg,#7a3a5a,#5a2a3a)",
+      nameZh: "张秀英",
+      nameEn: "Zhang Xiuying",
+      yearsZh: "1945 — 2022 · 享年77岁",
+      yearsEn: "1945 — 2022 · age 77",
+      quoteZh: "妈妈的手擀面，是世间最美的味道",
+      quoteEn: "Mother's hand-rolled noodles were the finest taste in the world.",
+      actsZh: "🌸 2,108 次祭拜",
+      actsEn: "🌸 2,108 tributes",
+      featured: true,
+    },
+    {
+      slug: "wang-shulan",
+      avatarChar: "淑",
+      headerGrad: "linear-gradient(135deg,#1a2a3a,#2a3a5a)",
+      avatarGrad: "linear-gradient(135deg,#3a5a7a,#2a3a5a)",
+      nameZh: "王淑兰",
+      nameEn: "Wang Shulan",
+      yearsZh: "1929 — 2021 · 享年92岁",
+      yearsEn: "1929 — 2021 · age 92",
+      quoteZh: "经历百年风华，安然归于平静",
+      quoteEn: "A century of grace, at peace at last.",
+      actsZh: "☁️ 1,876 次祭拜",
+      actsEn: "☁️ 1,876 tributes",
+      featured: true,
+    },
+    {
+      slug: "chen-meihua",
+      avatarChar: "梅",
+      headerGrad: "linear-gradient(135deg,#5a3a4a,#3a2030)",
+      avatarGrad: "linear-gradient(135deg,#8a5a6a,#5a3040)",
+      nameZh: "陈美华",
+      nameEn: "Chen Meihua",
+      yearsZh: "1940 — 2025 · 享年85岁",
+      yearsEn: "1940 — 2025 · age 85",
+      quoteZh: "花开有时，爱无绝期",
+      quoteEn: "Blossoms have their season; love does not end.",
+      actsZh: "🌹 1,542 次祭拜",
+      actsEn: "🌹 1,542 tributes",
+      featured: true,
+    },
+  ],
+
   THEMES: [
     { id: "ink-default", name: "默认墨韵", cat: "ink", desc: "米色纸感与深墨字，庄重耐看，适合大多数纪念馆", preview: { bg: "#f4f3f0", fg: "#1a1a1a", accent: "#5b7268", paper: "#fafaf8", deco: "墨" } },
     { id: "ink-moon", name: "月白如霜", cat: "ink", desc: "冷调蓝灰，宁静深远，适合文人学者", preview: { bg: "#eef2f6", fg: "#1a2a3a", accent: "#5a7a9a", paper: "#f8fafc", deco: "月" } },
@@ -389,58 +453,108 @@ window.MemorialContent = {
     this.renderGuestbookTab(m);
   },
 
-  async loadHomeMemorials(useApi) {
-    const grid = document.querySelector(".memorials-grid");
-    if (!grid) return;
-    if (!useApi) return;
+  homeShowcaseSlugs() {
+    return new Set(this.HOME_SHOWCASE.map((s) => s.slug));
+  },
 
-    try {
-      const data = await MemorialApi.listPublicMemorials();
-      const list = data.memorials || [];
-      if (!list.length) return;
+  renderHomeShowcaseCard(s) {
+    const en = window.MemorialI18n?.isEn();
+    const name = en ? s.nameEn : s.nameZh;
+    const years = en ? s.yearsEn : s.yearsZh;
+    const quote = en ? s.quoteEn : s.quoteZh;
+    const acts = en ? s.actsEn : s.actsZh;
+    const btn = window.MemorialI18n?.t("home.visitMemorial") || "前往纪念";
+    const slug = this.escape(s.slug);
+    return `
+        <div class="memorial-card" data-memorial-slug="${slug}" onclick="MemorialCore.openMemorial('${slug}')">
+          <div class="memorial-header" style="background:${s.headerGrad}">
+            <div class="memorial-avatar" style="background:${s.avatarGrad}">${this.escape(s.avatarChar)}</div>
+          </div>
+          <div class="memorial-body">
+            <div class="memorial-name">${this.escape(name)}</div>
+            <div class="memorial-years">${this.escape(years)}</div>
+            <div class="memorial-quote">${this.escape(quote)}</div>
+          </div>
+          <div class="memorial-footer">
+            <div class="memorial-acts">${this.escape(acts)}</div>
+            <button type="button" class="memorial-btn">${this.escape(btn)}</button>
+          </div>
+        </div>`;
+  },
 
-      const cards = list.slice(0, 3).map((m) => {
-        const char = this.avatarChar(m.name);
-        const grad = this.avatarGradient(m.name);
-        const birth = m.birthDate ? m.birthDate.slice(0, 4) : "—";
-        const death = m.deathDate ? m.deathDate.slice(0, 4) : "—";
-        return `
-        <div class="memorial-card" onclick="MemorialCore.openMemorial('${this.escape(m.slug)}')">
+  renderHomeApiCard(m) {
+    const en = window.MemorialI18n?.isEn();
+    const char = this.avatarChar(m.name);
+    const grad = this.avatarGradient(m.name);
+    const birth = m.birthDate ? m.birthDate.slice(0, 4) : "—";
+    const death = m.deathDate ? m.deathDate.slice(0, 4) : "—";
+    const years = en ? `${birth} — ${death}` : `${birth} — ${death}`;
+    const btn = window.MemorialI18n?.t("home.visitMemorial") || "前往纪念";
+    const acts = en ? "🕯️ Visit memorial" : "🕯️ 前往纪念";
+    const slug = this.escape(m.slug);
+    return `
+        <div class="memorial-card" data-memorial-slug="${slug}" onclick="MemorialCore.openMemorial('${slug}')">
           <div class="memorial-header" style="background:${grad}">
             <div class="memorial-avatar" style="background:${grad}">${char}</div>
           </div>
           <div class="memorial-body">
             <div class="memorial-name">${this.escape(m.name)}</div>
-            <div class="memorial-years">${birth} — ${death}</div>
+            <div class="memorial-years">${this.escape(years)}</div>
             <div class="memorial-quote">${this.escape(m.motto || "")}</div>
           </div>
           <div class="memorial-footer">
-            <div class="memorial-acts">🕯️ 前往纪念</div>
-            <button class="memorial-btn">进入纪念馆</button>
+            <div class="memorial-acts">${this.escape(acts)}</div>
+            <button type="button" class="memorial-btn">${this.escape(btn)}</button>
           </div>
         </div>`;
-      });
+  },
 
-      cards.push(`
-        <div class="memorial-card" onclick="goPage('create')">
+  renderHomeMoreCard() {
+    const en = window.MemorialI18n?.isEn();
+    const I = window.MemorialI18n;
+    const name = I?.t("home.moreMemorials") || (en ? "More memorials" : "更多纪念馆");
+    const years = en ? "12,847 memorials" : "12,847 个纪念馆";
+    const quote = en
+      ? "Everyone deserves to be remembered with tenderness."
+      : "每一位逝者都值得被温柔记住";
+    const acts = en ? "🔍 Search all" : "🔍 搜索全部";
+    const btn = I?.t("home.browseAll") || (en ? "Browse all" : "浏览全部");
+    return `
+        <div class="memorial-card" onclick="showToast('${en ? "Use search above to find a memorial" : "请使用上方搜索框查找纪念馆"}')">
           <div class="memorial-header" style="background:linear-gradient(135deg,#2a1a0a,#4a2a10)">
             <div class="memorial-avatar" style="background:linear-gradient(135deg,#7a4a20,#4a2a10)">+</div>
           </div>
           <div class="memorial-body">
-            <div class="memorial-name">创建纪念馆</div>
-            <div class="memorial-years">为亲人留下永恒记忆</div>
-            <div class="memorial-quote">每一位逝者都值得被温柔记住</div>
+            <div class="memorial-name">${this.escape(name)}</div>
+            <div class="memorial-years">${this.escape(years)}</div>
+            <div class="memorial-quote">${this.escape(quote)}</div>
           </div>
           <div class="memorial-footer">
-            <div class="memorial-acts">✨ 免费创建</div>
-            <button class="memorial-btn">开始创建</button>
+            <div class="memorial-acts">${this.escape(acts)}</div>
+            <button type="button" class="memorial-btn">${this.escape(btn)}</button>
           </div>
-        </div>`);
+        </div>`;
+  },
 
-      grid.innerHTML = cards.join("");
-    } catch (e) {
-      console.warn("home memorials:", e.message);
+  async loadHomeMemorials(useApi) {
+    const grid = document.querySelector(".memorials-grid");
+    if (!grid) return;
+
+    const cards = this.HOME_SHOWCASE.map((s) => this.renderHomeShowcaseCard(s));
+
+    if (useApi && window.MemorialApi) {
+      try {
+        const data = await MemorialApi.listPublicMemorials();
+        const showcase = this.homeShowcaseSlugs();
+        const list = (data.memorials || []).filter((m) => !showcase.has(m.slug));
+        list.slice(0, 4).forEach((m) => cards.push(this.renderHomeApiCard(m)));
+      } catch (e) {
+        console.warn("home memorials:", e.message);
+      }
     }
+
+    cards.push(this.renderHomeMoreCard());
+    grid.innerHTML = cards.join("");
   },
 
   renderQrDemo(slug, m) {
