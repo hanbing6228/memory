@@ -69,6 +69,30 @@ const PRODUCTS = [
   { slug: "qr-plaque", name: "QR二维码铭牌", description: "不锈钢激光蚀刻，扫码直达纪念馆，户外防锈。", priceCents: 38800, category: "gift", emoji: "📱", bgStyle: "linear-gradient(135deg,#1a1a1a,#2a2a2a)", sortOrder: 5 },
   { slug: "brass-plaque", name: "黄铜典藏铭牌", description: "铸造黄铜磨砂工艺，含红木底座，适合室内供奉。", priceCents: 58800, category: "gift", emoji: "🥉", bgStyle: "linear-gradient(135deg,#8b6914,#5a4010)", sortOrder: 6 },
   { slug: "stainless-plaque", name: "经典不锈钢铭牌", description: "304不锈钢，8×5cm，附安装配件，全国包邮。", priceCents: 29800, category: "gift", emoji: "🪨", bgStyle: "linear-gradient(135deg,#c8c8c8,#888)", sortOrder: 7 },
+  {
+    slug: "plan-premium-year",
+    name: "念归处 · 高级版会员（年付）",
+    description:
+      "解锁全部主题、无限照片与视频、AI 讣告助手、自定义域名与最多 3 个纪念馆。数字服务，支付后即时开通。",
+    priceCents: 39900,
+    category: "plan",
+    emoji: "✨",
+    bgStyle: "linear-gradient(135deg,#f4f3f0,#e8e6e0)",
+    badge: "年付",
+    sortOrder: 20,
+  },
+  {
+    slug: "plan-lifetime",
+    name: "念归处 · 终身版会员",
+    description:
+      "一次付费永久享有高级版全部权益，最多 5 个纪念馆、优先客服、商城 8 折与传承保障。",
+    priceCents: 99900,
+    category: "plan",
+    emoji: "♾️",
+    bgStyle: "linear-gradient(135deg,#1a1a1a,#3a3a3a)",
+    badge: "终身",
+    sortOrder: 21,
+  },
 ];
 
 async function seedMemorialContent(memorialId: string) {

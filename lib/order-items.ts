@@ -12,6 +12,7 @@ export type ResolvedOrderLine = {
   name: string;
   priceCents: number;
   qty: number;
+  category: string;
 };
 
 export async function resolveOrderLineItems(
@@ -42,6 +43,7 @@ export async function resolveOrderLineItems(
       name: label,
       priceCents: product.priceCents,
       qty: item.qty,
+      category: product.category,
     });
   }
 

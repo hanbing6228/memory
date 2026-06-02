@@ -61,7 +61,7 @@ export async function POST(request: Request, { params }: Params) {
       id: media.id,
       caption: media.caption,
       emoji: media.emoji,
-      imageUrl: media.imageUrl,
+      imageUrl: imageUrl,
       yearLabel: media.yearLabel,
     },
   });

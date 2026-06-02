@@ -1,7 +1,12 @@
 import { mkdir, writeFile, unlink } from "fs/promises";
 import path from "path";
 import { randomBytes } from "crypto";
-import { publicAssetUrl } from "@/lib/public-url";
+import {
+  deleteObject,
+  objectStorageConfigured,
+  putObject,
+  storageKeyFromUrl,
+} from "@/lib/object-storage";
 
 const MAX_BYTES = 4 * 1024 * 1024;
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -26,22 +31,47 @@ export async function saveMemorialImage(
 
   const id = randomBytes(8).toString("hex");
   const ext = EXT[file.type] || ".jpg";
+  const filename = `${id}${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  if (objectStorageConfigured()) {
+    const key = `memorials/${slug}/${filename}`;
+    const publicUrl = await putObject(key, buffer, file.type);
+    return { id, imageUrl: publicUrl };
+  }
+
   const dir = path.join(process.cwd(), "public", "uploads", "memorials", slug);
   await mkdir(dir, { recursive: true });
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const filename = `${id}${ext}`;
   await writeFile(path.join(dir, filename), buffer);
 
-  const imageUrl = publicAssetUrl(
-    `/uploads/memorials/${slug}/${filename}`
-  );
+  const imageUrl = `/uploads/memorials/${slug}/${filename}`;
   return { id, imageUrl };
 }
 
+/** Normalize stored URL to relative path for DB and clients. */
+export function normalizeUploadPath(imageUrl: string | null | undefined): string {
+  if (!imageUrl) return "";
+  if (imageUrl.startsWith("/uploads/")) return imageUrl;
+  if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+    return imageUrl;
+  }
+  return imageUrl;
+}
+
 export async function deleteMemorialImage(imageUrl: string | null | undefined) {
-  if (!imageUrl || !imageUrl.startsWith("/uploads/memorials/")) return;
-  const filePath = path.join(process.cwd(), "public", imageUrl);
+  if (!imageUrl) return;
+
+  const s3Key = storageKeyFromUrl(imageUrl);
+  if (s3Key && objectStorageConfigured()) {
+    await deleteObject(s3Key);
+    return;
+  }
+
+  const rel = imageUrl.startsWith("/uploads/memorials/")
+    ? imageUrl
+    : null;
+  if (!rel) return;
+  const filePath = path.join(process.cwd(), "public", rel);
   try {
     await unlink(filePath);
   } catch {

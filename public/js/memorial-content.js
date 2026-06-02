@@ -3,29 +3,42 @@
  */
 window.MemorialContent = {
   THEMES: [
-    { id: "ink-default", name: "默认墨韵", cat: "ink", preview: { bg: "#2c2416", fg: "#e8dcc8", deco: "墨" } },
-    { id: "ink-moon", name: "月白如霜", cat: "ink", preview: { bg: "#1a2a3a", fg: "#a0c0e0", deco: "月" } },
-    { id: "plum-snow", name: "梅花傲雪", cat: "floral", preview: { bg: "#2a1a1a", fg: "#e8a0a0", deco: "梅" } },
-    { id: "bamboo-wind", name: "竹影清风", cat: "ink", preview: { bg: "#1a2a1a", fg: "#80c080", deco: "竹" } },
-    { id: "peach-spring", name: "桃花春水", cat: "floral", preview: { bg: "#3a1a2a", fg: "#e8b0d0", deco: "桃" } },
-    { id: "qingming", name: "清明谷雨", cat: "seasonal", preview: { bg: "#1a2a20", fg: "#90e8a0", deco: "雨" } },
-    { id: "bailu", name: "白露秋风", cat: "seasonal", preview: { bg: "#2a2a3a", fg: "#c0d0e8", deco: "露" } },
-    { id: "zen-cloud", name: "云水禅心", cat: "modern", preview: { bg: "#2a2a2a", fg: "#e0d0b0", deco: "禅" } },
-    { id: "osmanthus", name: "金桂飘香", cat: "floral", preview: { bg: "#2a1a0a", fg: "#e8c060", deco: "桂" } },
-    { id: "snow", name: "立冬初雪", cat: "seasonal", preview: { bg: "#1a1a2a", fg: "#d0d8f0", deco: "雪" } },
-    { id: "ink-mountain", name: "水墨山河", cat: "ink", preview: { bg: "#1a1a1a", fg: "#888", deco: "山" } },
-    { id: "lotus", name: "浅草青荷", cat: "floral", preview: { bg: "#0a1a1a", fg: "#60c8a0", deco: "荷" } },
-    { id: "minimal", name: "素简留白", cat: "modern", preview: { bg: "#2a2a2a", fg: "#e0e0e0", deco: "白" } },
+    { id: "ink-default", name: "默认墨韵", cat: "ink", desc: "米色纸感与深墨字，庄重耐看，适合大多数纪念馆", preview: { bg: "#f4f3f0", fg: "#1a1a1a", accent: "#5b7268", paper: "#fafaf8", deco: "墨" } },
+    { id: "ink-moon", name: "月白如霜", cat: "ink", desc: "冷调蓝灰，宁静深远，适合文人学者", preview: { bg: "#eef2f6", fg: "#1a2a3a", accent: "#5a7a9a", paper: "#f8fafc", deco: "月" } },
+    { id: "plum-snow", name: "梅花傲雪", cat: "floral", desc: "淡粉与梅红点缀，温柔而不艳俗", preview: { bg: "#f8f0f0", fg: "#2a1a1a", accent: "#a05050", paper: "#fff8f8", deco: "梅" } },
+    { id: "bamboo-wind", name: "竹影清风", cat: "ink", desc: "竹青与浅绿，清新自然", preview: { bg: "#eef5ee", fg: "#1a2a1a", accent: "#4a7a4a", paper: "#f6faf6", deco: "竹" } },
+    { id: "peach-spring", name: "桃花春水", cat: "floral", desc: "春日桃粉，适合女性长辈与柔和气质", preview: { bg: "#faf0f4", fg: "#3a1a2a", accent: "#b06080", paper: "#fff5f8", deco: "桃" } },
+    { id: "qingming", name: "清明谷雨", cat: "seasonal", desc: "雨后天青，清明时节专用氛围", preview: { bg: "#eef6f0", fg: "#1a2a20", accent: "#3a6a4a", paper: "#f4faf6", deco: "雨" } },
+    { id: "bailu", name: "白露秋风", cat: "seasonal", desc: "秋意渐浓，金风玉露", preview: { bg: "#f2f2f6", fg: "#2a2a3a", accent: "#6a7a9a", paper: "#f8f8fc", deco: "露" } },
+    { id: "zen-cloud", name: "云水禅心", cat: "modern", desc: "灰褐禅意，简约克制", preview: { bg: "#f4f2ee", fg: "#2a2a2a", accent: "#8a7a50", paper: "#faf9f6", deco: "禅" } },
+    { id: "osmanthus", name: "金桂飘香", cat: "floral", desc: "金秋桂色，温暖明亮", preview: { bg: "#faf6ee", fg: "#2a1a0a", accent: "#b8860b", paper: "#fffcf5", deco: "桂" } },
+    { id: "snow", name: "立冬初雪", cat: "seasonal", desc: "雪夜蓝灰，静谧肃穆", preview: { bg: "#eef0f8", fg: "#1a1a2a", accent: "#5a6a8a", paper: "#f8f9fc", deco: "雪" } },
+    { id: "ink-mountain", name: "水墨山河", cat: "ink", desc: "远山层叠，水墨意境", preview: { bg: "#ececec", fg: "#1a1a1a", accent: "#666", paper: "#f5f5f5", deco: "山" } },
+    { id: "lotus", name: "浅草青荷", cat: "floral", desc: "莲池青绿，清净安详", preview: { bg: "#eef8f4", fg: "#0a1a1a", accent: "#3a9a7a", paper: "#f6fffa", deco: "荷" } },
+    { id: "minimal", name: "素简留白", cat: "modern", desc: "大量留白，现代杂志排版感", preview: { bg: "#ffffff", fg: "#222", accent: "#666", paper: "#fafafa", deco: "白" } },
   ],
+
+  themeCatLabel(cat) {
+    const map = { ink: "水墨传统", floral: "花卉自然", modern: "简约现代", seasonal: "节气时令" };
+    return map[cat] || cat;
+  },
 
   _articles: null,
 
   escape: MemorialStore.escapeHtml.bind(MemorialStore),
 
   formatYears(m) {
+    const en = window.MemorialI18n?.isEn();
     const fmt = (d) => {
       if (!d) return "";
       const p = d.split("-");
+      if (en) {
+        const months = [
+          "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+        ];
+        return `${months[parseInt(p[1], 10) - 1] || ""} ${parseInt(p[2], 10)}, ${p[0]}`;
+      }
       return p[0] + "年" + parseInt(p[1], 10) + "月" + parseInt(p[2], 10) + "日";
     };
     let age = "";
@@ -33,7 +46,7 @@ window.MemorialContent = {
       const a =
         parseInt(m.deathDate.slice(0, 4), 10) -
         parseInt(m.birthDate.slice(0, 4), 10);
-      if (a > 0) age = " · 享年" + a + "岁";
+      if (a > 0) age = en ? " · age " + a : " · 享年" + a + "岁";
     }
     if (m.birthDate && m.deathDate) {
       return fmt(m.birthDate) + " — " + fmt(m.deathDate) + age;
@@ -63,33 +76,47 @@ window.MemorialContent = {
   renderProfileHero(m) {
     const page = document.getElementById("page-profile-li");
     if (!page || !m) return;
-    const char = this.avatarChar(m.name);
+    const slug = m.slug || window.MemorialCore?.slug;
+    const merged = this.demoOverlay(slug, m);
+    const char = this.avatarChar(merged.name);
     const av = page.querySelector(".profile-avatar");
     if (av) {
       av.textContent = char;
       av.style.background = this.avatarGradient(m.name);
     }
     const nameEl = page.querySelector(".profile-name");
-    if (nameEl) nameEl.textContent = m.name;
+    if (nameEl) nameEl.textContent = merged.name;
     const yearsEl = page.querySelector(".profile-years");
-    if (yearsEl) yearsEl.textContent = this.formatYears(m);
+    if (yearsEl) yearsEl.textContent = this.formatYears(merged);
     const mottoEl = page.querySelector(".profile-motto");
     if (mottoEl) {
-      mottoEl.innerHTML = m.motto
-        ? "「" + this.escape(m.motto) + "」"
+      mottoEl.innerHTML = merged.motto
+        ? (window.MemorialI18n?.isEn()
+            ? '"' + this.escape(merged.motto) + '"'
+            : "「" + this.escape(merged.motto) + "」")
         : "";
     }
-    this.applyTheme(m.themeId);
+    this.applyTheme(merged.themeId || m.themeId);
+  },
+
+  demoOverlay(slug, m) {
+    if (!window.MemorialI18n?.getDemoMemorial) return m;
+    const demo = MemorialI18n.getDemoMemorial(slug);
+    if (!demo) return m;
+    return { ...m, ...demo, slug: m.slug || slug };
   },
 
   renderBioTab(m) {
     const el = document.getElementById("tab-bio-li");
     if (!el) return;
-    const bio =
-      m.bioHtml ||
-      "<p class=\"p0-empty\">家属尚未撰写生平故事。可通过「撰写讣告」生成并发布到此处。</p>";
-    const note = m.familyNote
-      ? `<div class="family-note"><p class="family-note-text">${this.escape(m.familyNote).replace(/\n/g, "<br>")}</p></div>`
+    const slug = m.slug || window.MemorialCore?.slug;
+    const merged = this.demoOverlay(slug, m);
+    const empty = window.MemorialI18n?.isEn()
+      ? "<p class=\"p0-empty\">Family has not published a life story yet. You can draft one with the obituary assistant.</p>"
+      : "<p class=\"p0-empty\">家属尚未撰写生平故事。可通过「撰写讣告」生成并发布到此处。</p>";
+    const bio = merged.bioHtml || empty;
+    const note = merged.familyNote
+      ? `<div class="family-note"><p class="family-note-text">${this.escape(merged.familyNote).replace(/\n/g, "<br>")}</p></div>`
       : "";
     el.innerHTML = `<div class="bio-section"><div class="bio-intro">${bio}</div>${note}</div>`;
   },
@@ -99,10 +126,15 @@ window.MemorialContent = {
     if (!el) return;
     const items = m.gallery || [];
     const canEdit =
-      window.MemorialCore?.canEdit && window.MemorialCore?.useApi;
+      (window.MemorialCore?.canEdit && window.MemorialCore?.useApi) ||
+      (!window.MemorialCore?.useApi && window.MemorialAuth?.user);
     const uploadBlock = canEdit
       ? `<div class="gallery-upload">
-          <p class="gallery-upload-hint">上传珍贵照片（JPG/PNG/WebP，最大 4MB）</p>
+          <p class="gallery-upload-hint">上传珍贵照片（JPG/PNG/WebP，最大 4MB）${
+            window.MEMORIAL_CONFIG?.storageEnabled
+              ? " · 已启用云存储"
+              : " · 未配置云存储时重启后图片可能丢失"
+          }</p>
           <div class="gallery-upload-row">
             <input type="file" id="gallery-file" accept="image/jpeg,image/png,image/webp,image/gif" />
             <input type="text" id="gallery-caption" placeholder="照片说明" />
@@ -166,32 +198,78 @@ window.MemorialContent = {
 
   async uploadGalleryPhoto() {
     const slug = window.MemorialCore?.slug;
-    if (!slug || !MemorialCore.useApi) {
-      showToast("请先登录后再上传");
+    if (!slug) return;
+    if (window.MemorialCore?.useApi && !window.MemorialAuth?.user) {
+      showToast(
+        window.MemorialI18n?.isEn()
+          ? "Please sign in to upload photos"
+          : "请先登录后再上传"
+      );
+      if (window.MemorialAuth) MemorialAuth.openPage("login");
       return;
     }
     const file = document.getElementById("gallery-file")?.files?.[0];
     if (!file) {
-      showToast("请选择图片");
+      showToast(window.MemorialI18n?.isEn() ? "Choose an image" : "请选择图片");
       return;
     }
+    const caption =
+      document.getElementById("gallery-caption")?.value ||
+      (window.MemorialI18n?.isEn() ? "Family photo" : "珍贵影像");
+    const year = document.getElementById("gallery-year")?.value?.trim();
+
+    if (!MemorialCore.useApi) {
+      try {
+        const dataUrl = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve(r.result);
+          r.onerror = reject;
+          r.readAsDataURL(file);
+        });
+        const m = MemorialStore.get(slug) || {};
+        m.gallery = m.gallery || [];
+        m.gallery.push({
+          id: "local_" + Date.now(),
+          caption,
+          yearLabel: year || null,
+          imageUrl: dataUrl,
+          emoji: "📸",
+        });
+        MemorialStore.update(slug, { gallery: m.gallery });
+        this.renderGalleryTab(MemorialStore.get(slug));
+        document.getElementById("gallery-file").value = "";
+        showToast(window.MemorialI18n?.isEn() ? "Photo saved locally" : "照片已保存（本地演示）");
+      } catch {
+        showToast(window.MemorialI18n?.isEn() ? "Upload failed" : "上传失败");
+      }
+      return;
+    }
+
+    if (!MemorialCore.canEdit) {
+      showToast(
+        window.MemorialI18n?.isEn()
+          ? "You do not have permission to upload"
+          : "无权上传，请使用演示账号登录"
+      );
+      return;
+    }
+
     const fd = new FormData();
     fd.append("file", file);
-    fd.append(
-      "caption",
-      document.getElementById("gallery-caption")?.value || "珍贵影像"
-    );
-    const year = document.getElementById("gallery-year")?.value?.trim();
+    fd.append("caption", caption);
     if (year) fd.append("yearLabel", year);
     try {
       const data = await MemorialApi.uploadMedia(slug, fd);
+      if (data.media?.imageUrl && window.MemorialApi) {
+        data.media.imageUrl = MemorialApi.assetUrl(data.media.imageUrl);
+      }
       const m = MemorialStore.get(slug) || {};
       m.gallery = m.gallery || [];
       m.gallery.push(data.media);
       MemorialStore.update(slug, { gallery: m.gallery });
       this.renderGalleryTab(MemorialStore.get(slug));
       document.getElementById("gallery-file").value = "";
-      showToast("照片已上传");
+      showToast(window.MemorialI18n?.isEn() ? "Photo uploaded" : "照片已上传");
     } catch (e) {
       showToast(e.message);
     }
@@ -217,9 +295,11 @@ window.MemorialContent = {
   renderTimelineTab(m) {
     const el = document.getElementById("tab-timeline-li");
     if (!el) return;
-    const events = m.timeline || [];
+    const slug = m.slug || window.MemorialCore?.slug;
+    const merged = this.demoOverlay(slug, m);
+    const events = merged.timeline || [];
     if (!events.length) {
-      el.innerHTML = `<p class="p0-empty">人生历程待家人补充。</p>`;
+      el.innerHTML = `<p class="p0-empty">${window.MemorialI18n?.isEn() ? "Timeline will be added by family." : "人生历程待家人补充。"}</p>`;
       return;
     }
     el.innerHTML =
@@ -241,9 +321,11 @@ window.MemorialContent = {
   renderFamilyTab(m) {
     const el = document.getElementById("tab-family-li");
     if (!el) return;
-    const people = m.family || [];
+    const slug = m.slug || window.MemorialCore?.slug;
+    const merged = this.demoOverlay(slug, m);
+    const people = merged.family || [];
     if (!people.length) {
-      el.innerHTML = `<p class="p0-empty">家族关系待补充。</p>`;
+      el.innerHTML = `<p class="p0-empty">${window.MemorialI18n?.isEn() ? "Family tree pending." : "家族关系待补充。"}</p>`;
       return;
     }
     const groups = {};
@@ -380,18 +462,32 @@ window.MemorialContent = {
   renderThemesGrid(selectedId) {
     const grid = document.getElementById("themes-grid");
     if (!grid) return;
-    grid.innerHTML = this.THEMES.map((t) => {
+    const m = window.MemorialStore?.get(window.MemorialCore?.slug) || {};
+    const sampleName = m.name || "纪念馆预览";
+    const char = this.avatarChar(sampleName);
+    grid.innerHTML = this.THEMES.map((raw) => {
+      const t = window.MemorialI18n
+        ? MemorialI18n.localizeTheme(raw)
+        : raw;
       const sel = selectedId === t.id;
+      const p = t.preview;
       return `
-      <div class="theme-card ${sel ? "selected" : ""}" data-theme-id="${t.id}" data-cat="${t.cat}" onclick="MemorialContent.pickTheme('${t.id}')">
-        <div class="theme-preview" style="background:${t.preview.bg}">
-          <div class="theme-preview-deco">${t.preview.deco}</div>
-          <span class="theme-preview-name" style="color:${t.preview.fg}">${t.name}</span>
+      <div class="theme-card theme-card-rich ${sel ? "selected" : ""}" data-theme-id="${t.id}" data-cat="${t.cat}">
+        <div class="theme-preview-rich" style="background:${p.bg};color:${p.fg}">
+          <span class="theme-cat-pill">${this.themeCatLabel(t.cat)}</span>
+          <div class="theme-mini-hero" style="background:${p.paper}">
+            <div class="theme-mini-avatar" style="background:${p.accent}">${char}</div>
+            <div class="theme-mini-name" style="color:${p.fg}">${this.escape(sampleName)}</div>
+            <div class="theme-mini-line" style="background:${p.accent};opacity:.35"></div>
+            <div class="theme-mini-line short" style="background:${p.accent};opacity:.2"></div>
+          </div>
+          <div class="theme-preview-deco">${p.deco}</div>
         </div>
         <div class="theme-info">
           <div class="theme-name">${t.name}</div>
+          <p class="theme-desc">${this.escape(t.desc || "")}</p>
         </div>
-        <button class="theme-select-btn">${sel ? "✓ 已选择" : "选择此主题"}</button>
+        <button type="button" class="theme-select-btn" onclick="MemorialContent.pickTheme('${t.id}')">${sel ? "✓ 已应用" : "应用此主题"}</button>
       </div>`;
     }).join("");
   },
@@ -438,11 +534,18 @@ window.MemorialContent = {
         /* fall through */
       }
     }
+    const file =
+      window.MemorialI18n?.isEn() ? "content/articles-en.json" : "content/articles.json";
     try {
-      const res = await fetch("content/articles.json");
+      const res = await fetch(file);
       this._articles = await res.json();
     } catch {
-      this._articles = { articles: [] };
+      try {
+        const res = await fetch("content/articles.json");
+        this._articles = await res.json();
+      } catch {
+        this._articles = { articles: [] };
+      }
     }
     return this._articles;
   },
@@ -510,6 +613,51 @@ window.MemorialContent = {
     } catch (e) {
       showToast(e.message);
     }
+  },
+
+  generateObituary() {
+    const en = window.MemorialI18n?.isEn();
+    const name =
+      document.getElementById("obit-name")?.value?.trim() ||
+      (en ? "our loved one" : "先人");
+    const job = document.getElementById("obit-job")?.value?.trim() || "";
+    const family = document.getElementById("obit-family")?.value?.trim() || "";
+    const achievements =
+      document.getElementById("obit-achievements")?.value?.trim() || "";
+    const hobbies = document.getElementById("obit-hobbies")?.value?.trim() || "";
+    const quote = document.getElementById("obit-quote")?.value?.trim() || "";
+    const virtues = Array.from(
+      document.querySelectorAll(".virtue-tag.active")
+    )
+      .map((t) => t.textContent)
+      .join(en ? ", " : "、");
+    const result = document.getElementById("obit-result");
+    if (!result) return;
+    result.innerHTML = `<em style="color:var(--gold)">${
+      en ? "✨ Drafting obituary…" : "✨ AI正在生成讣告初稿…"
+    }</em>`;
+    if (typeof obitNext === "function") obitNext(3);
+    setTimeout(() => {
+      if (en) {
+        const role = job ? `, ${job}` : "";
+        result.innerHTML = `
+<p style="text-align:center;margin-bottom:16px;font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--ink);letter-spacing:.12em">OBITUARY</p>
+<p>With deep sorrow we announce that <strong>${this.escape(name)}</strong>${role} passed away peacefully after illness, surrounded by family.</p><br>
+<p>${this.escape(name)} lived a life marked by ${virtues ? this.escape(virtues) + "." : "devotion and integrity."} ${achievements ? this.escape(achievements) : "Their work and kindness touched many."} ${family ? "Survived by " + this.escape(family) + "." : ""}</p><br>
+${hobbies ? `<p>In quieter hours they enjoyed ${this.escape(hobbies)}.</p><br>` : ""}
+${quote ? `<p>They often said: “${this.escape(quote)}” — words we will carry forward.</p><br>` : ""}
+<p>We will remember their voice, their patience, and the love they gave. May they rest in peace.</p><br>
+<p style="text-align:right;font-size:13px;color:var(--ink2)">— The family</p>`;
+      } else {
+        result.innerHTML = `<p style="text-align:center;margin-bottom:16px;font-family:'Ma Shan Zheng',cursive;font-size:18px;color:var(--ink)">讣  告</p>
+<p>忍泪谨告亲友：吾家${this.escape(name)}${job ? "（" + this.escape(job) + "）" : ""}，因病医治无效，于近日安详辞世。</p><br>
+<p>${this.escape(name)}先生/女士一生${virtues ? "以" + this.escape(virtues) + "著称，" : ""}${achievements ? this.escape(achievements) : "默默耕耘，为家庭与社会奉献了宝贵的一生。"}${family ? "身后留有" + this.escape(family) + "。" : ""}</p><br>
+${hobbies ? `<p>先生/女士生前${this.escape(hobbies)}，以此为乐，修身养性。</p><br>` : ""}
+${quote ? `<p>先生/女士生前常言：「${this.escape(quote)}」此言将永存我们心间。</p><br>` : ""}
+<p>斯人已逝，音容犹在。我们将永远铭记先生/女士的恩泽，并以此激励后辈，薪火相传。</p><br>
+<p style="text-align:right;font-size:13px;color:var(--ink2)">家属泣告</p>`;
+      }
+    }, 1600);
   },
 
   async openArticle(id) {

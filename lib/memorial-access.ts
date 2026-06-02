@@ -104,7 +104,7 @@ export function memorialToPublicJson(
       id: m.id,
       caption: m.caption,
       emoji: m.emoji,
-      imageUrl: m.imageUrl ? publicAssetUrl(m.imageUrl) : null,
+      imageUrl: m.imageUrl || null,
       yearLabel: m.yearLabel,
     })),
     rituals: memorial.rituals.map((r) => {

@@ -12,6 +12,14 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const PAYMENT_METHODS = [
+  "inquiry",
+  "stripe",
+  "alipay",
+  "wechat",
+  "bank",
+] as const;
+
 const itemSchema = z
   .object({
     slug: z.string().min(1).max(80),
@@ -24,20 +32,64 @@ const schema = z.object({
   contactEmail: z.string().email(),
   contactName: z.string().min(1).max(80),
   contactPhone: z.string().min(6).max(20),
-  shippingAddress: z.string().min(4).max(200),
-  shippingCity: z.string().min(1).max(60),
-  shippingProvince: z.string().min(1).max(60),
+  shippingAddress: z.string().max(200).optional(),
+  shippingCity: z.string().max(60).optional(),
+  shippingProvince: z.string().max(60).optional(),
   shippingPostal: z.string().max(20).optional(),
   note: z.string().max(2000).optional(),
   memorialSlug: z.string().max(80).optional(),
   items: z.array(itemSchema).min(1),
-  paymentMethod: z.enum(["inquiry", "stripe"]).default("inquiry"),
+  paymentMethod: z.enum(PAYMENT_METHODS).default("alipay"),
 });
+
+function paymentInstructions(method: string, orderNumber: string, totalYuan: number) {
+  const alipayQr = process.env.PAYMENT_ALIPAY_QR_URL || "";
+  const wechatQr = process.env.PAYMENT_WECHAT_QR_URL || "";
+  const bankName = process.env.PAYMENT_BANK_NAME || "中国工商银行";
+  const bankAccount = process.env.PAYMENT_BANK_ACCOUNT || "";
+  const bankHolder = process.env.PAYMENT_BANK_HOLDER || "念归处科技有限公司";
+
+  if (method === "alipay") {
+    return {
+      title: "支付宝支付",
+      steps: [
+        `打开支付宝，向收款码转账 ¥${totalYuan.toFixed(2)}`,
+        `备注订单号：${orderNumber}`,
+        "支付完成后客服将在 24 小时内为您开通/发货",
+      ],
+      qrUrl: alipayQr || null,
+    };
+  }
+  if (method === "wechat") {
+    return {
+      title: "微信支付",
+      steps: [
+        `打开微信扫一扫，支付 ¥${totalYuan.toFixed(2)}`,
+        `备注订单号：${orderNumber}`,
+        "支付完成后客服将在 24 小时内为您开通/发货",
+      ],
+      qrUrl: wechatQr || null,
+    };
+  }
+  if (method === "bank") {
+    return {
+      title: "银行转账",
+      steps: [
+        `开户行：${bankName}`,
+        `户名：${bankHolder}`,
+        bankAccount ? `账号：${bankAccount}` : "账号：请联系客服获取",
+        `金额：¥${totalYuan.toFixed(2)}，附言：${orderNumber}`,
+      ],
+      qrUrl: null,
+    };
+  }
+  return null;
+}
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return jsonError("请完整填写收货与联系信息", 400);
+  if (!parsed.success) return jsonError("请完整填写联系信息", 400);
 
   const data = parsed.data;
   const resolved = await resolveOrderLineItems(
@@ -51,10 +103,40 @@ export async function POST(request: Request) {
 
   const lines = resolved.items;
   const totalCents = orderLinesTotalCents(lines);
+  if (totalCents <= 0) {
+    return jsonError("订单金额无效，请重新选择商品", 400);
+  }
+
+  const needsShipping = lines.some((l) => l.category !== "plan");
+  if (
+    needsShipping &&
+    (!data.shippingAddress?.trim() ||
+      !data.shippingCity?.trim() ||
+      !data.shippingProvince?.trim())
+  ) {
+    return jsonError("实物商品请填写完整收货地址", 400);
+  }
+
   const itemsText = orderLinesToText(lines);
   const itemsJson = orderLinesToJson(lines);
-
   const orderNumber = generateOrderNumber();
+  const totalYuan = totalCents / 100;
+
+  const shippingAddress = needsShipping
+    ? sanitizeText(data.shippingAddress!, 200)
+    : data.shippingAddress
+      ? sanitizeText(data.shippingAddress, 200)
+      : "数字服务 · 无需物流";
+  const shippingCity = needsShipping
+    ? sanitizeText(data.shippingCity!, 60)
+    : data.shippingCity
+      ? sanitizeText(data.shippingCity, 60)
+      : "—";
+  const shippingProvince = needsShipping
+    ? sanitizeText(data.shippingProvince!, 60)
+    : data.shippingProvince
+      ? sanitizeText(data.shippingProvince, 60)
+      : "—";
 
   if (data.paymentMethod === "stripe" && process.env.STRIPE_SECRET_KEY) {
     try {
@@ -67,6 +149,7 @@ export async function POST(request: Request) {
       const session = await stripe.checkout.sessions.create({
         mode: "payment",
         customer_email: data.contactEmail,
+        payment_method_types: ["card", "alipay", "wechat_pay"],
         line_items: lines.map((i) => ({
           quantity: i.qty,
           price_data: {
@@ -86,9 +169,9 @@ export async function POST(request: Request) {
           contactEmail: data.contactEmail.toLowerCase(),
           contactName: sanitizeText(data.contactName, 80),
           contactPhone: sanitizeText(data.contactPhone, 20),
-          shippingAddress: sanitizeText(data.shippingAddress, 200),
-          shippingCity: sanitizeText(data.shippingCity, 60),
-          shippingProvince: sanitizeText(data.shippingProvince, 60),
+          shippingAddress,
+          shippingCity,
+          shippingProvince,
           shippingPostal: data.shippingPostal
             ? sanitizeText(data.shippingPostal, 20)
             : null,
@@ -107,14 +190,18 @@ export async function POST(request: Request) {
 
       return jsonOk({
         orderNumber,
+        total: totalYuan,
         checkoutUrl: session.url,
         paymentMethod: "stripe",
       });
     } catch (e) {
       console.error("Stripe checkout failed:", e);
-      return jsonError("在线支付暂不可用，请改用人工跟进", 502);
+      return jsonError("Stripe 支付暂不可用，请选用支付宝/微信/银行转账", 502);
     }
   }
+
+  const method =
+    data.paymentMethod === "inquiry" ? "alipay" : data.paymentMethod;
 
   await prisma.orderInquiry.create({
     data: {
@@ -122,9 +209,9 @@ export async function POST(request: Request) {
       contactEmail: data.contactEmail.toLowerCase(),
       contactName: sanitizeText(data.contactName, 80),
       contactPhone: sanitizeText(data.contactPhone, 20),
-      shippingAddress: sanitizeText(data.shippingAddress, 200),
-      shippingCity: sanitizeText(data.shippingCity, 60),
-      shippingProvince: sanitizeText(data.shippingProvince, 60),
+      shippingAddress,
+      shippingCity,
+      shippingProvince,
       shippingPostal: data.shippingPostal
         ? sanitizeText(data.shippingPostal, 20)
         : null,
@@ -135,15 +222,16 @@ export async function POST(request: Request) {
         ? sanitizeText(data.memorialSlug, 80)
         : null,
       totalCents,
-      status: "pending",
-      paymentMethod: "inquiry",
+      status: "awaiting_payment",
+      paymentMethod: method,
     },
   });
 
   return jsonOk({
     orderNumber,
-    total: totalCents / 100,
-    paymentMethod: "inquiry",
+    total: totalYuan,
+    paymentMethod: method,
+    payment: paymentInstructions(method, orderNumber, totalYuan),
   });
 }
 

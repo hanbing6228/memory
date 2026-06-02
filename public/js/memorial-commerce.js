@@ -7,6 +7,8 @@ window.MemorialCommerce = {
   cartOpen: false,
   selectedProduct: null,
   stripeAvailable: false,
+  paymentConfig: null,
+  checkoutMode: "physical",
 
   async init(useApi) {
     this.cart = this.loadCart();
@@ -23,9 +25,18 @@ window.MemorialCommerce = {
     } catch {
       this.products = this.fallbackProducts();
     }
-    this.stripeAvailable = !!(
-      window.MEMORIAL_CONFIG && window.MEMORIAL_CONFIG.stripeEnabled
-    );
+    try {
+      const status = await MemorialApi.health();
+      this.stripeAvailable = !!status?.stripeEnabled;
+      this.paymentConfig = status?.payments || null;
+      if (window.MEMORIAL_CONFIG) {
+        window.MEMORIAL_CONFIG.stripeEnabled = this.stripeAvailable;
+      }
+    } catch {
+      this.stripeAvailable = !!(
+        window.MEMORIAL_CONFIG && window.MEMORIAL_CONFIG.stripeEnabled
+      );
+    }
     this.renderShopGrids();
     this.checkOrderFromUrl();
   },
@@ -40,6 +51,8 @@ window.MemorialCommerce = {
       { slug: "qr-plaque", name: "QR二维码铭牌", price: 388, category: "gift", emoji: "📱", bg: "linear-gradient(135deg,#1a1a1a,#2a2a2a)", description: "不锈钢激光蚀刻，扫码直达纪念馆。" },
       { slug: "brass-plaque", name: "黄铜典藏铭牌", price: 588, category: "gift", emoji: "🥉", bg: "linear-gradient(135deg,#8b6914,#5a4010)", description: "铸造黄铜磨砂工艺，含红木底座。" },
       { slug: "stainless-plaque", name: "经典不锈钢铭牌", price: 298, category: "gift", emoji: "🪨", bg: "linear-gradient(135deg,#c8c8c8,#888)", description: "304不锈钢，8×5cm，附安装配件。" },
+      { slug: "plan-premium-year", name: "高级版会员（年付）", price: 399, category: "plan", emoji: "✨", bg: "linear-gradient(135deg,#f4f3f0,#e8e6e0)", description: "全部主题、无限照片与 AI 讣告。" },
+      { slug: "plan-lifetime", name: "终身版会员", price: 999, category: "plan", emoji: "♾️", bg: "linear-gradient(135deg,#1a1a1a,#3a3a3a)", description: "一次付费，永久享有高级版权益。" },
     ];
   },
 
@@ -56,6 +69,7 @@ window.MemorialCommerce = {
   },
 
   productCard(p, detailFn) {
+    if (window.MemorialI18n) p = MemorialI18n.localizeProduct(p);
     const esc = MemorialStore.escapeHtml;
     const list =
       p.listPrice && p.listPrice > p.price
@@ -77,7 +91,13 @@ window.MemorialCommerce = {
       .join("");
     ["shop-products-grid", "shop-page-grid"].forEach((id) => {
       const el = document.getElementById(id);
-      if (el) el.innerHTML = html || '<p class="p0-empty" style="padding:24px;grid-column:1/-1">暂无商品</p>';
+      if (el) {
+        const empty =
+          window.MemorialI18n?.t("shop.empty") || "暂无商品";
+        el.innerHTML =
+          html ||
+          `<p class="p0-empty" style="padding:24px;grid-column:1/-1">${empty}</p>`;
+      }
     });
     const qr = document.getElementById("qr-products-grid");
     if (qr) {
@@ -167,13 +187,17 @@ window.MemorialCommerce = {
 
   addToCart(product, qty) {
     const q = qty || 1;
-    const existing = this.cart.find((i) => i.slug === product.slug);
-    if (existing) existing.qty += q;
-    else {
+    const catalog = this.findProduct(product.slug) || product;
+    const existing = this.cart.find((i) => i.slug === catalog.slug);
+    if (existing) {
+      existing.qty += q;
+      existing.price = catalog.price;
+      existing.name = catalog.name;
+    } else {
       this.cart.push({
-        slug: product.slug,
-        name: product.name,
-        price: product.price,
+        slug: catalog.slug,
+        name: catalog.name,
+        price: catalog.price,
         qty: q,
       });
     }
@@ -219,52 +243,167 @@ window.MemorialCommerce = {
     document.getElementById("cart-backdrop")?.classList.toggle("open", this.cartOpen);
   },
 
+  cartIsDigitalOnly() {
+    return this.cart.every((i) => {
+      const p = this.findProduct(i.slug);
+      return p?.category === "plan";
+    });
+  },
+
+  purchaseMembership(planSlug) {
+    const p = this.findProduct(planSlug);
+    if (!p) {
+      showToast("会员商品未加载，请刷新后重试");
+      return;
+    }
+    if (!window.MemorialAuth?.user) {
+      showToast("请先登录后再购买会员");
+      if (window.MemorialAuth) MemorialAuth.openPage("login");
+      return;
+    }
+    this.cart = [{ slug: p.slug, name: p.name, price: p.price, qty: 1 }];
+    this.saveCart();
+    this.updateCartUI();
+    this.checkoutMode = "membership";
+    this.openCheckout();
+  },
+
   openCheckout() {
     if (!this.cart.length) {
-      showToast("购物车为空");
+      showToast(window.MemorialI18n?.isEn() ? "Cart is empty" : "购物车为空");
+      return;
+    }
+    const sum = this.cart.reduce((s, i) => s + i.price * i.qty, 0);
+    if (sum <= 0) {
+      showToast(
+        window.MemorialI18n?.isEn()
+          ? "Invalid order total"
+          : "订单金额无效，请重新选择商品"
+      );
       return;
     }
     this.cartOpen = false;
     document.getElementById("cart-drawer")?.classList.remove("open");
     document.getElementById("cart-backdrop")?.classList.remove("open");
-    document.getElementById("checkout-modal")?.classList.add("open");
+    const checkout = document.getElementById("checkout-modal");
+    if (checkout) {
+      checkout.classList.add("open");
+      checkout.setAttribute("aria-hidden", "false");
+      checkout.scrollTop = 0;
+      document.body.style.overflow = "hidden";
+    }
+    this.renderCheckoutFormI18n();
+
+    const digital = this.cartIsDigitalOnly();
+    const shipBlock = document.getElementById("checkout-shipping-block");
+    if (shipBlock) {
+      shipBlock.style.display = digital ? "none" : "block";
+    }
+    const shipHint = document.getElementById("checkout-digital-hint");
+    if (shipHint) {
+      shipHint.style.display = digital ? "block" : "none";
+    }
+
     const user = window.MemorialAuth?.user;
     if (user) {
       const emailEl = document.getElementById("co-email");
       const nameEl = document.getElementById("co-name");
-      if (emailEl && !emailEl.value) emailEl.value = user.email;
+      const phoneEl = document.getElementById("co-phone");
+      const loginId = user.email?.includes("@nianguichu.local")
+        ? user.phone || ""
+        : user.email;
+      if (emailEl && !emailEl.value) {
+        emailEl.value = user.email?.includes("@nianguichu.local")
+          ? ""
+          : user.email;
+      }
+      if (phoneEl && !phoneEl.value && loginId && /^1\d{10}$/.test(String(loginId))) {
+        phoneEl.value = loginId;
+      }
       if (nameEl && !nameEl.value && user.name) nameEl.value = user.name;
     }
-    const payRow = document.getElementById("checkout-pay-row");
-    const inquiryOnly = document.getElementById("checkout-inquiry-only");
-    if (payRow) {
-      payRow.style.display = this.stripeAvailable ? "grid" : "none";
-    }
-    if (inquiryOnly) {
-      inquiryOnly.style.display = this.stripeAvailable ? "none" : "block";
-    }
+
+    const method = document.querySelector('input[name="pay-method"]:checked');
+    if (method) method.checked = true;
+
     const summary = document.getElementById("checkout-summary");
     if (summary) {
       summary.innerHTML = this.cart
         .map(
           (i) =>
-            `<div class="checkout-line">${MemorialStore.escapeHtml(i.name)} ×${i.qty} — ¥${i.price * i.qty}</div>`
+            `<div class="checkout-line">${MemorialStore.escapeHtml(i.name)} ×${i.qty} — ¥${(i.price * i.qty).toFixed(2)}</div>`
         )
         .join("");
-      const sum = this.cart.reduce((s, i) => s + i.price * i.qty, 0);
-      summary.innerHTML += `<div class="checkout-total-line">合计：¥${sum}</div>`;
+      summary.innerHTML += `<div class="checkout-total-line">合计：¥${sum.toFixed(2)}</div>`;
     }
   },
 
   closeCheckout() {
-    document.getElementById("checkout-modal")?.classList.remove("open");
+    const checkout = document.getElementById("checkout-modal");
+    checkout?.classList.remove("open");
+    checkout?.setAttribute("aria-hidden", "true");
+    document.getElementById("cart-backdrop")?.classList.remove("open");
+    document.body.style.overflow = "";
+  },
+
+  renderCheckoutFormI18n() {
+    const I = window.MemorialI18n;
+    if (!I) return;
+    const t = (k, fb) => I.t(k) || fb;
+    const map = [
+      ["co-name", "checkout.name", "联系人姓名 *", "Contact name *"],
+      ["co-email", "checkout.email", "联系邮箱 *", "Email *"],
+      ["co-phone", "checkout.phone", "手机号 *", "Phone *"],
+      ["co-province", "checkout.province", "省份 *", "Province *"],
+      ["co-city", "checkout.city", "城市 *", "City *"],
+      ["co-address", "checkout.address", "详细地址 *", "Street address *"],
+      ["co-postal", "checkout.postal", "邮编（可选）", "Postal code (optional)"],
+      ["co-note", "checkout.note", "备注（可选）", "Note (optional)"],
+    ];
+    map.forEach(([id, key, zh, en]) => {
+      const el = document.getElementById(id);
+      if (el) el.placeholder = t(key, I.isEn() ? en : zh);
+    });
+    const hint = document.getElementById("checkout-digital-hint");
+    if (hint) {
+      hint.textContent = t(
+        "checkout.digitalHint",
+        I.isEn()
+          ? "Digital membership needs no shipping address."
+          : "数字会员服务无需填写收货地址，支付后为您开通。"
+      );
+    }
+    const legend = document.querySelector("#checkout-modal .payment-methods legend");
+    if (legend) legend.textContent = t("checkout.payLegend", I.isEn() ? "Payment" : "支付方式");
+    const submitBtn = document.querySelector("#checkout-modal .submit-btn");
+    if (submitBtn) {
+      submitBtn.textContent = t(
+        "checkout.submit",
+        I.isEn() ? "Place order & pay" : "提交订单并支付"
+      );
+    }
+    const head = document.querySelector("#checkout-modal .modal-head h3");
+    if (head) head.textContent = t("checkout.title", I.isEn() ? "Checkout" : "确认订单");
+  },
+
+  getSelectedPaymentMethod() {
+    const el = document.querySelector('input[name="pay-method"]:checked');
+    return el?.value || "alipay";
   },
 
   async submitCheckout(paymentMethod) {
+    const method = paymentMethod || this.getSelectedPaymentMethod();
+    const digital = this.cartIsDigitalOnly();
+    const email = document.getElementById("co-email")?.value?.trim();
+    const phone = document.getElementById("co-phone")?.value?.trim();
+    const contactEmail =
+      email ||
+      (phone ? `phone_${phone.replace(/\s/g, "")}@nianguichu.local` : "");
+
     const payload = {
       contactName: document.getElementById("co-name")?.value?.trim(),
-      contactEmail: document.getElementById("co-email")?.value?.trim(),
-      contactPhone: document.getElementById("co-phone")?.value?.trim(),
+      contactEmail,
+      contactPhone: phone,
       shippingProvince: document.getElementById("co-province")?.value?.trim(),
       shippingCity: document.getElementById("co-city")?.value?.trim(),
       shippingAddress: document.getElementById("co-address")?.value?.trim(),
@@ -276,20 +415,37 @@ window.MemorialCommerce = {
         qty: i.qty,
         name: i.name,
       })),
-      paymentMethod: paymentMethod || "inquiry",
+      paymentMethod: method,
     };
 
-    if (
-      !payload.contactName ||
-      !payload.contactEmail ||
-      !payload.contactPhone ||
-      !payload.shippingAddress ||
-      !payload.shippingCity ||
-      !payload.shippingProvince
-    ) {
-      showToast("请完整填写联系与收货信息");
+    const I = window.MemorialI18n;
+    if (!payload.contactName || !payload.contactPhone) {
+      showToast(
+        I?.isEn()
+          ? "Please enter contact name and phone"
+          : "请填写联系人姓名与手机号"
+      );
       return;
     }
+    if (!contactEmail || !contactEmail.includes("@")) {
+      showToast(I?.isEn() ? "Please enter a valid email" : "请填写有效联系邮箱");
+      return;
+    }
+    if (
+      !digital &&
+      (!payload.shippingAddress ||
+        !payload.shippingCity ||
+        !payload.shippingProvince)
+    ) {
+      showToast(
+        I?.isEn()
+          ? "Please enter full shipping address"
+          : "实物商品请填写完整收货地址"
+      );
+      return;
+    }
+
+    const orderTotal = this.cart.reduce((s, i) => s + i.price * i.qty, 0);
 
     if (window.MemorialCore?.useApi) {
       try {
@@ -298,12 +454,15 @@ window.MemorialCommerce = {
         this.cart = [];
         this.saveCart();
         this.updateCartUI();
-        this.toggleCart();
         if (res.checkoutUrl) {
           window.location.href = res.checkoutUrl;
           return;
         }
-        this.showOrderConfirm(res.orderNumber, res.total, res.paymentMethod);
+        if (res.payment) {
+          this.showPaymentPage(res.orderNumber, res.total, res.paymentMethod, res.payment);
+        } else {
+          this.showOrderConfirm(res.orderNumber, res.total, res.paymentMethod);
+        }
         return;
       } catch (e) {
         showToast(e.message);
@@ -315,27 +474,87 @@ window.MemorialCommerce = {
     this.cart = [];
     this.saveCart();
     this.updateCartUI();
-    this.showOrderConfirm("NG-DEMO-" + Date.now().toString(36).toUpperCase(), payload.items.reduce((s,i)=>s+i.price*i.qty,0), "inquiry");
+    this.showOrderConfirm(
+      "NG-DEMO-" + Date.now().toString(36).toUpperCase(),
+      orderTotal,
+      "inquiry"
+    );
+  },
+
+  paymentMethodLabel(method) {
+    const map = {
+      stripe: "Stripe 在线支付",
+      alipay: "支付宝",
+      wechat: "微信支付",
+      bank: "银行转账",
+      inquiry: "支付宝",
+    };
+    return map[method] || method;
   },
 
   showOrderConfirm(orderNumber, total, method) {
     const page = document.getElementById("page-order-confirm");
     if (!page) return;
     document.getElementById("order-num").textContent = orderNumber;
-    document.getElementById("order-total").textContent = "¥" + total;
+    document.getElementById("order-total").textContent =
+      typeof total === "number" ? "¥" + total.toFixed(2) : "¥" + total;
     document.getElementById("order-method").textContent =
-      method === "stripe" ? "在线支付" : "人工跟进（客服将联系您）";
+      this.paymentMethodLabel(method);
     goPage("order-confirm");
   },
 
-  checkOrderFromUrl() {
+  showPaymentPage(orderNumber, total, method, payment) {
+    const body = document.getElementById("payment-page-body");
+    if (!body) {
+      this.showOrderConfirm(orderNumber, total, method);
+      return;
+    }
+    const en = window.MemorialI18n?.isEn();
+    const qr =
+      payment.qrUrl
+        ? `<div class="payment-qr-wrap"><img src="${MemorialStore.escapeHtml(payment.qrUrl)}" alt="${en ? "QR code" : "收款码"}" class="payment-qr" /></div>`
+        : `<p class="payment-no-qr">${en ? "QR code will be sent by support — include your order number when paying." : "收款码由客服提供，请备注订单号完成支付。"}</p>`;
+    const steps = (payment.steps || [])
+      .map((s) => `<li>${MemorialStore.escapeHtml(s)}</li>`)
+      .join("");
+    body.innerHTML = `
+      <div class="payment-page-card">
+        <p class="payment-page-kicker">${en ? "Payment due" : "待支付"}</p>
+        <h1 class="payment-page-title">${MemorialStore.escapeHtml(payment.title || (en ? "Complete payment" : "完成支付"))}</h1>
+        <p class="payment-page-amount">¥${Number(total).toFixed(2)}</p>
+        <p class="payment-page-order">${en ? "Order" : "订单号"}：<strong>${MemorialStore.escapeHtml(orderNumber)}</strong></p>
+        ${qr}
+        <ol class="payment-steps">${steps}</ol>
+        <button type="button" class="submit-btn" style="width:100%" onclick="MemorialCommerce.finishPayment('${MemorialStore.escapeHtml(orderNumber)}',${total},'${MemorialStore.escapeHtml(method)}')">${en ? "I have paid" : "我已完成支付"}</button>
+        <button type="button" class="obit-back-btn" style="width:100%;margin-top:10px" onclick="goPage('home')">${en ? "Back to home" : "返回首页"}</button>
+      </div>`;
+    goPage("payment");
+    window.scrollTo(0, 0);
+  },
+
+  finishPayment(orderNumber, total, method) {
+    this.showOrderConfirm(orderNumber, total, method);
+    showToast("感谢支付，客服将尽快确认并开通服务");
+  },
+
+  async checkOrderFromUrl() {
     const params = new URLSearchParams(location.search);
     const order = params.get("order");
     if (!order) return;
     const paid = params.get("paid");
     if (paid === "1") {
-      this.showOrderConfirm(order, "—", "stripe");
+      let total = "—";
+      if (window.MemorialCore?.useApi) {
+        try {
+          const data = await MemorialApi.getOrder(order);
+          total = data.order?.total ?? total;
+        } catch {
+          /* ignore */
+        }
+      }
+      this.showOrderConfirm(order, total, "stripe");
       showToast("支付成功，感谢您的订购");
+      history.replaceState({}, "", location.pathname);
     }
   },
 
@@ -352,15 +571,52 @@ window.MemorialCommerce = {
       this.selectedProduct = local;
     }
     if (!this.selectedProduct) return;
-    const p = this.selectedProduct;
-    document.getElementById("product-modal-title").textContent = p.name;
-    document.getElementById("product-modal-body").innerHTML = `
-      <div class="product-detail-hero" style="background:${p.bg}">${p.emoji || "🛍️"}</div>
-      <p style="line-height:1.8;margin:16px 0">${MemorialStore.escapeHtml(p.description || "")}</p>
-      <div class="product-detail-price">¥${p.price}${p.listPrice && p.listPrice > p.price ? ` <span style="text-decoration:line-through;opacity:.5;font-size:14px">¥${p.listPrice}</span>` : ""}</div>
-      <button class="submit-btn" style="width:100%;margin-top:16px" onclick="MemorialCommerce.addBySlug('${MemorialStore.escapeHtml(p.slug)}');closeModal('product-modal')">加入购物车</button>
-    `;
-    document.getElementById("product-modal").classList.add("open");
+    this.renderProductPage(this.selectedProduct);
+    goPage("product-detail");
+  },
+
+  renderProductPage(p) {
+    const root = document.getElementById("product-detail-root");
+    if (!root) return;
+    const esc = MemorialStore.escapeHtml;
+    const list =
+      p.listPrice && p.listPrice > p.price
+        ? `<span class="product-detail-list">¥${p.listPrice}</span>`
+        : "";
+    const specs = [
+      { label: "分类", value: this.categoryLabel(p.category) },
+      { label: "配送", value: p.category === "plan" ? "数字服务 · 即时开通" : "全国配送" },
+      { label: "编号", value: p.slug },
+    ];
+    root.innerHTML = `
+      <nav class="product-breadcrumb"><button type="button" class="obit-back-btn" onclick="goPage('shop')">← 返回商城</button></nav>
+      <div class="product-detail-layout">
+        <div class="product-detail-visual" style="background:${p.bg || "#eee"}">
+          <span class="product-detail-emoji">${p.emoji || "🛍️"}</span>
+          ${p.badge ? `<span class="product-detail-badge">${esc(p.badge)}</span>` : ""}
+        </div>
+        <div class="product-detail-main">
+          <h1>${esc(p.name)}</h1>
+          <div class="product-detail-price-row">¥${p.price} ${list}</div>
+          <p class="product-detail-desc">${esc(p.description || "暂无详细说明")}</p>
+          <ul class="product-spec-list">${specs.map((s) => `<li><span>${esc(s.label)}</span><strong>${esc(s.value)}</strong></li>`).join("")}</ul>
+          <div class="product-detail-actions">
+            <button type="button" class="submit-btn" onclick="MemorialCommerce.addBySlug('${esc(p.slug)}');showToast('已加入购物车')">加入购物车</button>
+            <button type="button" class="obit-action-btn primary" onclick="MemorialCommerce.addBySlug('${esc(p.slug)}');MemorialCommerce.openCheckout()">立即购买</button>
+          </div>
+        </div>
+      </div>`;
+  },
+
+  categoryLabel(cat) {
+    const map = {
+      flower: "鲜花花圈",
+      candle: "蜡烛香品",
+      gift: "纪念礼品",
+      plant: "种植纪念",
+      plan: "会员服务",
+    };
+    return map[cat] || cat;
   },
 };
 

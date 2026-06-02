@@ -6,7 +6,20 @@ window.MemorialApi = {
 
   assetUrl(path) {
     if (!path) return "";
-    if (path.startsWith("http://") || path.startsWith("https://")) return path;
+    if (path.startsWith("http://") || path.startsWith("https://")) {
+      try {
+        const u = new URL(path);
+        if (u.pathname.startsWith("/uploads/")) {
+          return this.base + "/api" + u.pathname;
+        }
+      } catch {
+        /* ignore */
+      }
+      return path;
+    }
+    if (path.startsWith("/uploads/")) {
+      return this.base + "/api" + path;
+    }
     return this.base + path;
   },
 
@@ -190,6 +203,13 @@ window.MemorialApi = {
 
   qrUrl(slug) {
     return this.base + "/api/memorials/" + encodeURIComponent(slug) + "/qr";
+  },
+
+  async sendCode({ channel, target }) {
+    return this.request("/api/auth/send-code", {
+      method: "POST",
+      body: JSON.stringify({ channel, target }),
+    });
   },
 
   async register(payload) {

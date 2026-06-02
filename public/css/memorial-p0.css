@@ -23,9 +23,9 @@
   transition: all 0.2s;
 }
 .privacy-chip.active {
-  background: var(--gold);
+  background: var(--ink, #1a1a1a);
   color: #fff;
-  border-color: var(--gold);
+  border-color: var(--ink, #1a1a1a);
 }
 .quiet-toggle {
   padding: 6px 12px;
@@ -75,7 +75,7 @@ body.quiet-mode #tab-shop-li { display: none !important; }
 }
 .anniversary-card.past { opacity: 0.65; border-left-color: var(--paper3); }
 .anniversary-label {
-  font-family: "Ma Shan Zheng", cursive;
+  font-family: var(--fw-display, "Cormorant Garamond", "Noto Serif SC", serif);
   font-size: 18px;
   color: var(--ink);
   margin-bottom: 4px;

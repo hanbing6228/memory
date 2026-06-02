@@ -16,8 +16,11 @@ window.MemorialCore = {
       this.useApi = !!(status && status.database);
       if (window.MEMORIAL_CONFIG) {
         window.MEMORIAL_CONFIG.stripeEnabled = !!(status && status.stripeEnabled);
+        window.MEMORIAL_CONFIG.storageEnabled = !!status?.storageEnabled;
+        window.MEMORIAL_CONFIG.wechatLoginEnabled = !!status?.wechatLoginEnabled;
       }
     }
+    this.parseAuthQuery();
     if (window.MemorialAuth) {
       await MemorialAuth.init(this.useApi);
     }
@@ -43,6 +46,28 @@ window.MemorialCore = {
     const params = new URLSearchParams(location.search);
     const m = params.get("memorial");
     if (m) this.slug = m;
+  },
+
+  parseAuthQuery() {
+    const params = new URLSearchParams(location.search);
+    if (params.get("wechat_login") === "1") {
+      showToast(
+        window.MemorialI18n?.toastMsg("微信登录成功") || "微信登录成功"
+      );
+      if (window.MemorialAuth) MemorialAuth.refresh();
+      history.replaceState({}, "", location.pathname);
+    }
+    const err = params.get("auth_error");
+    if (err) {
+      const zhMsg =
+        err === "wechat_not_configured"
+          ? "微信登录未配置"
+          : err === "wechat_state_invalid"
+            ? "微信授权已过期，请重试"
+            : "微信登录失败，请改用邮箱或手机号";
+      showToast(window.MemorialI18n?.toastMsg(zhMsg) || zhMsg);
+      history.replaceState({}, "", location.pathname);
+    }
   },
 
   async onAuthChanged() {
