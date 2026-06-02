@@ -91,6 +91,17 @@ window.MemorialContent = {
 
   escape: MemorialStore.escapeHtml.bind(MemorialStore),
 
+  normalizeGalleryItem(item) {
+    if (!item?.imageUrl) return item;
+    const url =
+      item.imageUrl.startsWith("data:") || item.imageUrl.startsWith("blob:")
+        ? item.imageUrl
+        : window.MemorialApi?.assetUrl
+          ? MemorialApi.assetUrl(item.imageUrl)
+          : item.imageUrl;
+    return { ...item, imageUrl: url };
+  },
+
   formatYears(m) {
     const en = window.MemorialI18n?.isEn();
     const fmt = (d) => {
@@ -188,22 +199,26 @@ window.MemorialContent = {
   renderGalleryTab(m) {
     const el = document.getElementById("tab-gallery-li");
     if (!el) return;
-    const items = m.gallery || [];
+    const items = (m.gallery || []).map((item) => this.normalizeGalleryItem(item));
     const canEdit =
       (window.MemorialCore?.canEdit && window.MemorialCore?.useApi) ||
       (!window.MemorialCore?.useApi && window.MemorialAuth?.user);
+    const en = window.MemorialI18n?.isEn();
+    const storageNote = window.MEMORIAL_CONFIG?.storageEnabled
+      ? en
+        ? " · cloud storage on"
+        : " · 已启用云存储"
+      : en
+        ? " · without cloud storage, uploads may not persist on free hosting"
+        : " · 未配置云存储时重启后图片可能丢失";
     const uploadBlock = canEdit
       ? `<div class="gallery-upload">
-          <p class="gallery-upload-hint">上传珍贵照片（JPG/PNG/WebP，最大 4MB）${
-            window.MEMORIAL_CONFIG?.storageEnabled
-              ? " · 已启用云存储"
-              : " · 未配置云存储时重启后图片可能丢失"
-          }</p>
+          <p class="gallery-upload-hint">${en ? "Upload photos (JPG/PNG/WebP, max 4MB)" : "上传珍贵照片（JPG/PNG/WebP，最大 4MB）"}${storageNote}</p>
           <div class="gallery-upload-row">
             <input type="file" id="gallery-file" accept="image/jpeg,image/png,image/webp,image/gif" />
-            <input type="text" id="gallery-caption" placeholder="照片说明" />
-            <input type="text" id="gallery-year" placeholder="年份（可选）" />
-            <button type="button" class="submit-btn" onclick="MemorialContent.uploadGalleryPhoto()">上传</button>
+            <input type="text" id="gallery-caption" placeholder="${en ? "Caption" : "照片说明"}" />
+            <input type="text" id="gallery-year" placeholder="${en ? "Year (optional)" : "年份（可选）"}" />
+            <button type="button" class="submit-btn" onclick="MemorialContent.uploadGalleryPhoto()">${en ? "Upload" : "上传"}</button>
           </div>
         </div>`
       : "";
@@ -216,11 +231,7 @@ window.MemorialContent = {
         ? `<div class="gallery-grid">` +
           items
             .map((item, idx) => {
-              const imgSrc = item.imageUrl
-                ? window.MemorialApi
-                  ? MemorialApi.assetUrl(item.imageUrl)
-                  : item.imageUrl
-                : "";
+              const imgSrc = item.imageUrl || "";
               const visual = imgSrc
                 ? `<img src="${this.escape(imgSrc)}" alt="${this.escape(item.caption)}" class="gallery-photo" onclick="MemorialContent.openGalleryLightbox(${idx})" loading="lazy" />`
                 : `<div class="gallery-placeholder" style="background:linear-gradient(135deg,#2d4a2a,#1a3a2a);min-height:140px;display:flex;align-items:center;justify-content:center;font-size:48px">${item.emoji || "📸"}</div>`;
@@ -677,17 +688,22 @@ window.MemorialContent = {
       return;
     }
     el.innerHTML = list
-      .map(
-        (a) => `
+      .map((a) => {
+        const photo =
+          window.MemorialVisuals?.articleImage(a.id) || a.image || null;
+        const imgStyle = photo
+          ? `background-image:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.35)),url('${photo}');background-size:cover;background-position:center`
+          : `background:${a.bg || "linear-gradient(135deg,#e8f4f8,#d0e8f0)"}`;
+        return `
       <div class="article-card" data-cat="${a.cat}" onclick="MemorialContent.openArticle('${this.escape(a.id)}')">
-        <div class="article-card-img" style="background:${a.bg || "linear-gradient(135deg,#e8f4f8,#d0e8f0)"}">${a.emoji || "📖"}</div>
+        <div class="article-card-img article-card-img--photo" style="${imgStyle}">${photo ? "" : a.emoji || "📖"}</div>
         <div class="article-card-body">
           <div class="article-cat">${this.escape(a.catLabel)}</div>
           <div class="article-title">${this.escape(a.title)}</div>
           <div class="article-summary">${this.escape(a.summary)}</div>
         </div>
-      </div>`
-      )
+      </div>`;
+      })
       .join("");
   },
 

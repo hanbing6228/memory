@@ -8,7 +8,6 @@ window.MemorialCore = {
   _needsLogin: false,
 
   async init() {
-    this.applyWelcomeCopy();
     this.bindCreateNav();
     this.parseUrlSlug();
     if (window.MemorialApi) {
@@ -137,7 +136,12 @@ window.MemorialCore = {
         quietMode: mem.quietMode,
         timeline: mem.timeline || [],
         family: mem.family || [],
-        gallery: mem.gallery || [],
+        gallery: (mem.gallery || []).map((item) => ({
+          ...item,
+          imageUrl: item.imageUrl
+            ? window.MemorialApi?.assetUrl(item.imageUrl) || item.imageUrl
+            : null,
+        })),
         tributeCounts: mem.tributeCounts || {},
         rituals: (mem.rituals || []).map((r) => ({
           id: r.id,
@@ -224,6 +228,10 @@ window.MemorialCore = {
   },
 
   applyWelcomeCopy() {
+    if (window.MemorialI18n?.applyWelcomeHero) {
+      MemorialI18n.applyWelcomeHero();
+      return;
+    }
     const c = MEMORIAL_COPY.welcome;
     const badge = document.querySelector(".hero-badge");
     const tagline = document.querySelector(".hero-tagline");

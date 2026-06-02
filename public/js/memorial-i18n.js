@@ -184,6 +184,10 @@ window.MemorialI18n = {
       "nav.cart": "购物车",
       "nav.create": "创建纪念馆",
       "home.brand": "念归处",
+      "home.heroTitle": "念归处",
+      "home.heroSub": "华人数字纪念馆",
+      "home.heroTagline":
+        "以安静、清晰的方式保存生平与追思——如同一篇值得反复阅读的纪念文章，留给家人与后代。",
       "home.stat.memorials": "纪念馆",
       "home.stat.messages": "留言祈福",
       "home.stat.partners": "合作殡仪馆",
@@ -281,6 +285,10 @@ window.MemorialI18n = {
       "nav.cart": "Cart",
       "nav.create": "Create memorial",
       "home.brand": "Nianguichu",
+      "home.heroTitle": "Nianguichu",
+      "home.heroSub": "Digital memorial for families",
+      "home.heroTagline":
+        "Preserve a life and the love around it—in a calm, lasting space your family can return to anytime.",
       "home.stat.memorials": "Memorials",
       "home.stat.messages": "Messages",
       "home.stat.partners": "Partner homes",
@@ -663,6 +671,7 @@ window.MemorialI18n = {
     this.applyFeatureCards();
     this.applyMemorialCardButtons();
     this.applyShopCats();
+    this.applySecondaryPages();
     this.applyLangButton();
     this.applyPricingPage();
     this.refreshDynamic();
@@ -698,19 +707,46 @@ window.MemorialI18n = {
     const c = window.MEMORIAL_COPY?.welcome;
     if (!c) return;
     const badge = document.querySelector(".hero-badge");
-    const title = document.querySelector(".hero-title");
-    const sub = document.querySelector(".hero-sub");
-    const tagline = document.querySelector(".hero-tagline");
     const search = document.getElementById("searchInput");
     const searchBtn = document.querySelector(".hero-search-btn");
     const createBtn = document.querySelector(".nav-btn[data-action='create-memorial']");
     if (badge && c.badge) badge.textContent = c.badge;
-    if (title && c.title) title.textContent = c.title;
-    if (sub && c.sub) sub.textContent = c.sub;
-    if (tagline && c.tagline) tagline.innerHTML = c.tagline;
     if (search && c.searchPlaceholder) search.placeholder = c.searchPlaceholder;
     if (searchBtn && c.searchBtn) searchBtn.textContent = c.searchBtn;
     if (createBtn && c.createCta) createBtn.textContent = c.createCta;
+  },
+
+  applySecondaryPages() {
+    const shopTitle = document.querySelector("#page-shop .shop-page-hero h1");
+    if (shopTitle) {
+      shopTitle.textContent = this.isEn() ? "Memorial shop" : "纪念商城";
+    }
+    const membookTools = document.querySelectorAll("#page-membook .membook-tool-name");
+    const membookNames = this.isEn()
+      ? [
+          "Photo curation",
+          "AI biography",
+          "Obituary & tribute",
+          "Family messages",
+        ]
+      : ["智能照片整理", "AI传记撰写", "传记与讣告", "家族留言板"];
+    membookTools.forEach((el, i) => {
+      if (membookNames[i]) el.textContent = membookNames[i];
+    });
+    const membookToolTitle = document.querySelector(
+      "#page-membook .membook-tools .section-title"
+    );
+    if (membookToolTitle) {
+      membookToolTitle.textContent = this.isEn() ? "Book tools" : "制作工具";
+    }
+    const membookToolSub = document.querySelector(
+      "#page-membook .membook-tools .section-sub"
+    );
+    if (membookToolSub) {
+      membookToolSub.textContent = this.isEn()
+        ? "Six features, one workflow"
+        : "六大功能，一键完成";
+    }
   },
 
   applyFeatureCards() {

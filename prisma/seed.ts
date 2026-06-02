@@ -124,14 +124,65 @@ async function seedMemorialContent(memorialId: string) {
     ],
   });
 
+  const galleryPhotos = [
+    "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1564890369478-c89ca2ed55e5?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=900&q=80",
+  ];
+
   await prisma.memorialMedia.createMany({
     data: [
-      { memorialId, caption: "1998年退休典礼 · 三千学子送别恩师", emoji: "📸", yearLabel: "1998年", sortOrder: 0 },
-      { memorialId, caption: "书法作品", emoji: "🖋️", yearLabel: "2015年", sortOrder: 1 },
-      { memorialId, caption: "茶道雅集", emoji: "🫖", yearLabel: "晚年", sortOrder: 2 },
-      { memorialId, caption: "全家福 · 2020年春节", emoji: "👨‍👩‍👧‍👦", yearLabel: "2020年", sortOrder: 3 },
-      { memorialId, caption: "《湖湘方言词典》出版", emoji: "📚", yearLabel: "2010年", sortOrder: 4 },
-      { memorialId, caption: "古琴雅奏", emoji: "🎻", yearLabel: "2018年", sortOrder: 5 },
+      {
+        memorialId,
+        caption: "1998年退休典礼 · 三千学子送别恩师",
+        emoji: "📸",
+        yearLabel: "1998年",
+        imageUrl: galleryPhotos[0],
+        sortOrder: 0,
+      },
+      {
+        memorialId,
+        caption: "书法作品",
+        emoji: "🖋️",
+        yearLabel: "2015年",
+        imageUrl: galleryPhotos[1],
+        sortOrder: 1,
+      },
+      {
+        memorialId,
+        caption: "茶道雅集",
+        emoji: "🫖",
+        yearLabel: "晚年",
+        imageUrl: galleryPhotos[2],
+        sortOrder: 2,
+      },
+      {
+        memorialId,
+        caption: "全家福 · 2020年春节",
+        emoji: "👨‍👩‍👧‍👦",
+        yearLabel: "2020年",
+        imageUrl: galleryPhotos[3],
+        sortOrder: 3,
+      },
+      {
+        memorialId,
+        caption: "《湖湘方言词典》出版",
+        emoji: "📚",
+        yearLabel: "2010年",
+        imageUrl: galleryPhotos[4],
+        sortOrder: 4,
+      },
+      {
+        memorialId,
+        caption: "古琴雅奏",
+        emoji: "🎻",
+        yearLabel: "2018年",
+        imageUrl: galleryPhotos[5],
+        sortOrder: 5,
+      },
     ],
   });
 }
