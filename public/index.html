@@ -1024,8 +1024,8 @@ body.lang-en .nav-link,body.lang-en .nav-btn,body.lang-en .nav-auth-btn,body.lan
 <div class="page" id="page-guides">
   <div class="page-content">
     <div class="guides-hero">
-      <h1>丧葬百科</h1>
-      <p>礼仪指南、悲伤疗愈与身后事务——在艰难时刻，为您提供可靠参考</p>
+      <h1 data-i18n="guides.title">丧葬百科</h1>
+      <p data-i18n="guides.sub">礼仪指南、悲伤疗愈与身后事务——在艰难时刻，为您提供可靠参考</p>
     </div>
     <div class="guides-section">
       <div class="guides-admin" id="guides-admin">
@@ -1045,13 +1045,13 @@ body.lang-en .nav-link,body.lang-en .nav-btn,body.lang-en .nav-auth-btn,body.lan
         <textarea id="ga-body" placeholder="正文（段落之间空一行）"></textarea>
         <button type="button" class="submit-btn" onclick="MemorialContent.submitGuideArticle()">发布</button>
       </div>
-      <div class="articles-filter">
-        <div class="filter-tag active" onclick="filterArticles(this,'all','guides')">全部</div>
-        <div class="filter-tag" onclick="filterArticles(this,'grief','guides')">悲伤疗愈</div>
-        <div class="filter-tag" onclick="filterArticles(this,'ritual','guides')">丧礼礼仪</div>
-        <div class="filter-tag" onclick="filterArticles(this,'memory','guides')">守护记忆</div>
-        <div class="filter-tag" onclick="filterArticles(this,'child','guides')">与孩子谈生死</div>
-        <div class="filter-tag" onclick="filterArticles(this,'legal','guides')">身后事务</div>
+      <div class="articles-filter" id="guides-articles-filter">
+        <div class="filter-tag active" data-filter-cat="all" onclick="filterArticles(this,'all','guides')">全部</div>
+        <div class="filter-tag" data-filter-cat="grief" onclick="filterArticles(this,'grief','guides')">悲伤疗愈</div>
+        <div class="filter-tag" data-filter-cat="ritual" onclick="filterArticles(this,'ritual','guides')">丧礼礼仪</div>
+        <div class="filter-tag" data-filter-cat="memory" onclick="filterArticles(this,'memory','guides')">守护记忆</div>
+        <div class="filter-tag" data-filter-cat="child" onclick="filterArticles(this,'child','guides')">与孩子谈生死</div>
+        <div class="filter-tag" data-filter-cat="legal" onclick="filterArticles(this,'legal','guides')">身后事务</div>
       </div>
       <div class="articles-grid" id="guides-articles-grid"></div>
     </div>
@@ -1619,9 +1619,14 @@ const planningData=[
   ]},
 ];
 let taskState={};
+function activePlanningData(){
+  return window.MemorialI18n?.getPlanningData?.()||planningData;
+}
 function renderPlanning(){
+  const data=activePlanningData();
   const container=document.getElementById('planning-cats');
-  container.innerHTML=planningData.map((cat,ci)=>`
+  const urgentLabel=window.MemorialI18n?.t('planning.urgent')||'紧急';
+  container.innerHTML=data.map((cat,ci)=>`
     <div class="planning-cat">
       <div class="cat-header" onclick="toggleCat(this)" style="border-bottom-color:${cat.color}">
         <span class="cat-icon">${cat.icon}</span>
@@ -1633,7 +1638,7 @@ function renderPlanning(){
         <div class="task-item">
           <div class="task-check" id="tc-${ci}-${ti}" onclick="toggleTask(${ci},${ti})"></div>
           <div class="task-text">
-            <div class="task-title">${task.t}${task.urgent?'<span class="task-urgent">紧急</span>':''}</div>
+            <div class="task-title">${task.t}${task.urgent?'<span class="task-urgent">'+urgentLabel+'</span>':''}</div>
             <div class="task-desc">${task.d}</div>
           </div>
         </div>`).join('')}
@@ -1654,11 +1659,13 @@ function toggleTask(ci,ti){
   updateProgress();
 }
 function updateProgress(){
-  const total=planningData.reduce((s,c)=>s+c.tasks.length,0);
+  const data=activePlanningData();
+  const total=data.reduce((s,c)=>s+c.tasks.length,0);
   const done=Object.values(taskState).filter(Boolean).length;
-  document.getElementById('pct-label').textContent=`${done} / ${total} 项`;
+  const itemsLabel=window.MemorialI18n?.isEn()?' items':' 项';
+  document.getElementById('pct-label').textContent=`${done} / ${total}${itemsLabel}`;
   document.getElementById('pct-bar').style.width=`${(done/total)*100}%`;
-  planningData.forEach((cat,ci)=>{
+  data.forEach((cat,ci)=>{
     const catDone=cat.tasks.filter((_,ti)=>taskState[`${ci}-${ti}`]).length;
     const el=document.getElementById(`cat-prog-${ci}`);
     if(el)el.textContent=`${catDone}/${cat.tasks.length}`;

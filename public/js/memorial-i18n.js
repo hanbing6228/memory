@@ -274,6 +274,47 @@ window.MemorialI18n = {
       "membook.samplesSub": "完整中英文内容，可在线翻页预览",
       "membook.pageTitle": "纪念册制作",
       "membook.pageSub": "将散落的记忆凝聚成一本可以传家的精装纪念册",
+      "guides.title": "丧葬百科",
+      "guides.sub": "礼仪指南、悲伤疗愈与身后事务——在艰难时刻，为您提供可靠参考",
+      "guides.filter.all": "全部",
+      "guides.filter.grief": "悲伤疗愈",
+      "guides.filter.ritual": "丧礼礼仪",
+      "guides.filter.memory": "守护记忆",
+      "guides.filter.child": "与孩子谈生死",
+      "guides.filter.legal": "身后事务",
+      "articles.loading": "加载中…",
+      "articles.empty": "暂无文章",
+      "shop.addToCart": "加入购物车",
+      "tools.card.obit": "AI 讣告撰写",
+      "tools.card.obitDesc": "三步生成感人讣告并发布到纪念馆",
+      "tools.card.plan": "葬礼规划清单",
+      "tools.card.planDesc": "24 项任务清单，有序料理后事",
+      "tools.card.membook": "纪念册制作",
+      "tools.card.membookDesc": "智能排版，支持数字版与精装印刷",
+      "tools.card.themes": "主题模板",
+      "tools.card.themesDesc": "50+ 中式纪念馆主题",
+      "tools.card.qr": "QR 铭牌介绍",
+      "tools.card.qrDesc": "了解材质与订购流程",
+      "tools.card.guides": "丧葬百科",
+      "tools.card.guidesDesc": "礼仪、疗愈与身后事务指南",
+      "obit.title": "AI讣告撰写助手",
+      "obit.sub": "用温柔的文字，为挚爱写下最后的告白",
+      "obit.step1": "基本信息",
+      "obit.step2": "生平故事",
+      "obit.step3": "预览发布",
+      "planning.title": "葬礼规划清单",
+      "planning.sub": "在最艰难的时刻，让我们陪您有序前行",
+      "planning.progress": "完成进度",
+      "planning.urgent": "紧急",
+      "themes.title": "主题模板",
+      "themes.sub": "50余款精心设计的中式主题，让纪念馆更具文化温度",
+      "themes.filter.all": "全部风格",
+      "themes.filter.ink": "水墨传统",
+      "themes.filter.floral": "花卉自然",
+      "themes.filter.modern": "简约现代",
+      "themes.filter.seasonal": "二十四节气",
+      "qr.title": "QR扫码铭牌",
+      "qr.sub": "将数字纪念馆与实体墓碑相连——一块铭牌，承载永恒记忆",
     },
     en: {
       "nav.home": "Home",
@@ -375,6 +416,47 @@ window.MemorialI18n = {
       "membook.samplesSub": "Full Chinese & English previews — flip through online",
       "membook.pageTitle": "Memorial books",
       "membook.pageSub": "Gather scattered memories into a heirloom-quality book",
+      "guides.title": "Guides & resources",
+      "guides.sub": "Ritual, grief, and practical guidance when you need it most",
+      "guides.filter.all": "All",
+      "guides.filter.grief": "Grief support",
+      "guides.filter.ritual": "Funeral customs",
+      "guides.filter.memory": "Keeping memory",
+      "guides.filter.child": "Children & loss",
+      "guides.filter.legal": "After affairs",
+      "articles.loading": "Loading…",
+      "articles.empty": "No articles yet",
+      "shop.addToCart": "Add to cart",
+      "tools.card.obit": "AI obituary",
+      "tools.card.obitDesc": "Draft and publish to the memorial in three steps",
+      "tools.card.plan": "Funeral checklist",
+      "tools.card.planDesc": "24 tasks to plan with clarity",
+      "tools.card.membook": "Memorial book",
+      "tools.card.membookDesc": "Layout for digital or print editions",
+      "tools.card.themes": "Themes",
+      "tools.card.themesDesc": "50+ memorial layouts",
+      "tools.card.qr": "QR plaques",
+      "tools.card.qrDesc": "Materials and ordering",
+      "tools.card.guides": "Guides",
+      "tools.card.guidesDesc": "Ritual, grief & practical help",
+      "obit.title": "AI obituary assistant",
+      "obit.sub": "Gentle words for a final farewell",
+      "obit.step1": "Basics",
+      "obit.step2": "Life story",
+      "obit.step3": "Preview",
+      "planning.title": "Funeral planning checklist",
+      "planning.sub": "A calm order of tasks in difficult days",
+      "planning.progress": "Progress",
+      "planning.urgent": "Urgent",
+      "themes.title": "Theme gallery",
+      "themes.sub": "50+ thoughtful layouts for your memorial",
+      "themes.filter.all": "All styles",
+      "themes.filter.ink": "Ink tradition",
+      "themes.filter.floral": "Floral",
+      "themes.filter.modern": "Modern",
+      "themes.filter.seasonal": "Seasons",
+      "qr.title": "QR memorial plaques",
+      "qr.sub": "Link stone and screen—one plaque, lasting memory",
     },
   },
 
@@ -526,6 +608,73 @@ window.MemorialI18n = {
         desc: "Clean monochrome—focus on words and photos",
       },
     },
+  },
+
+  planningDataEn: [
+    {
+      icon: "🚨",
+      title: "Within 24 hours",
+      color: "#8b2020",
+      tasks: [
+        { t: "Contact funeral home", d: "Report passing and arrange transport", urgent: true },
+        { t: "Notify close family", d: "Call children, siblings, and next of kin", urgent: true },
+        { t: "Obtain death certificate", d: "From hospital or coroner—keep originals safe", urgent: true },
+        { t: "Arrange remains", d: "Hospital morgue or direct to funeral provider" },
+      ],
+    },
+    {
+      icon: "📋",
+      title: "Within 48 hours",
+      color: "var(--blue)",
+      tasks: [
+        { t: "Notify employer or school", d: "Leave and bereavement paperwork" },
+        { t: "Contact executor or lawyer", d: "If a will exists, involve them early" },
+        { t: "Care for dependents", d: "Arrange guardianship if minors are involved" },
+        { t: "Publish obituary", d: "WeChat, newspaper, or this platform" },
+      ],
+    },
+    {
+      icon: "🏮",
+      title: "Funeral preparation",
+      color: "var(--teal)",
+      tasks: [
+        { t: "Choose service type", d: "Burial, cremation, or memorial—family agreement" },
+        { t: "Set date and venue", d: "Funeral home, temple, or ceremony space" },
+        { t: "Select portrait photo", d: "Clear, dignified image for displays" },
+        { t: "Arrange officiant", d: "Family member or professional host" },
+        { t: "Invite guests", d: "Share time, place, and any dress guidance" },
+        { t: "Prepare mourning attire", d: "Per local custom for close relatives" },
+      ],
+    },
+    {
+      icon: "📝",
+      title: "Estate & paperwork",
+      color: "var(--green)",
+      tasks: [
+        { t: "Register the death", d: "Civil affairs office with required documents" },
+        { t: "Bank accounts", d: "Freeze or close; begin inheritance steps" },
+        { t: "Property & assets", d: "Follow will or statutory rules; lawyer if disputed" },
+        { t: "Cancel ID documents", d: "ID card, license, passport, social insurance" },
+        { t: "Insurance claims", d: "Contact insurers with certificate" },
+        { t: "Belongings", d: "Keep heirlooms; dispose of the rest thoughtfully" },
+      ],
+    },
+    {
+      icon: "💙",
+      title: "Healing together",
+      color: "var(--lotus)",
+      tasks: [
+        { t: "Share memories", d: "Stories that comfort and connect family" },
+        { t: "Create online memorial", d: "A lasting Nianguichu space for all" },
+        { t: "Seek support", d: "Counseling if grief feels unmanageable" },
+        { t: "Mark anniversaries", d: "Qingming and family remembrance days" },
+      ],
+    },
+  ],
+
+  getPlanningData() {
+    if (this.isEn()) return this.planningDataEn;
+    return typeof planningData !== "undefined" ? planningData : [];
   },
 
   featureCards: [
@@ -718,21 +867,34 @@ window.MemorialI18n = {
   },
 
   applySecondaryPages() {
-    const shopTitle = document.querySelector("#page-shop .shop-page-hero h1");
-    if (shopTitle) {
-      shopTitle.textContent = this.isEn() ? "Memorial shop" : "纪念商城";
-    }
+    this.applyToolsPage();
+    this.applyGuidesFilters();
+    this.applyObituaryPage();
+    this.applyPlanningHero();
+    this.applyThemesHero();
+    this.applyQrPage();
     const membookTools = document.querySelectorAll("#page-membook .membook-tool-name");
-    const membookNames = this.isEn()
-      ? [
-          "Photo curation",
-          "AI biography",
-          "Obituary & tribute",
-          "Family messages",
-        ]
-      : ["智能照片整理", "AI传记撰写", "传记与讣告", "家族留言板"];
+    const membookKeys = [
+      "membook.tool.photo",
+      "membook.tool.bio",
+      "membook.tool.obit",
+      "membook.tool.board",
+    ];
+    const membookNamesZh = [
+      "智能照片整理",
+      "AI传记撰写",
+      "传记与讣告",
+      "家族留言板",
+    ];
+    const membookNamesEn = [
+      "Photo curation",
+      "AI biography",
+      "Obituary & tribute",
+      "Family messages",
+    ];
     membookTools.forEach((el, i) => {
-      if (membookNames[i]) el.textContent = membookNames[i];
+      const name = this.isEn() ? membookNamesEn[i] : membookNamesZh[i];
+      if (name) el.textContent = name;
     });
     const membookToolTitle = document.querySelector(
       "#page-membook .membook-tools .section-title"
@@ -748,6 +910,160 @@ window.MemorialI18n = {
         ? "Six features, one workflow"
         : "六大功能，一键完成";
     }
+  },
+
+  applyToolsPage() {
+    const keys = [
+      ["tools.card.obit", "tools.card.obitDesc"],
+      ["tools.card.plan", "tools.card.planDesc"],
+      ["tools.card.membook", "tools.card.membookDesc"],
+      ["tools.card.themes", "tools.card.themesDesc"],
+      ["tools.card.qr", "tools.card.qrDesc"],
+      ["tools.card.guides", "tools.card.guidesDesc"],
+    ];
+    document.querySelectorAll("#page-tools .tool-card").forEach((card, i) => {
+      const pair = keys[i];
+      if (!pair) return;
+      const name = card.querySelector(".tool-card-name");
+      const desc = card.querySelector(".tool-card-desc");
+      if (name) name.textContent = this.t(pair[0]);
+      if (desc) desc.textContent = this.t(pair[1]);
+    });
+  },
+
+  applyGuidesFilters() {
+    const map = {
+      all: "guides.filter.all",
+      grief: "guides.filter.grief",
+      ritual: "guides.filter.ritual",
+      memory: "guides.filter.memory",
+      child: "guides.filter.child",
+      legal: "guides.filter.legal",
+    };
+    document
+      .querySelectorAll("#guides-articles-filter .filter-tag")
+      .forEach((el) => {
+        const cat = el.getAttribute("data-filter-cat");
+        if (cat && map[cat]) el.textContent = this.t(map[cat]);
+      });
+  },
+
+  applyObituaryPage() {
+    const hero = document.querySelector("#page-obituary .obit-hero");
+    if (hero) {
+      const h1 = hero.querySelector("h1");
+      const p = hero.querySelector("p");
+      if (h1) h1.textContent = this.t("obit.title");
+      if (p) p.textContent = this.t("obit.sub");
+    }
+    const steps = ["obit.step1", "obit.step2", "obit.step3"];
+    document.querySelectorAll("#page-obituary .obit-step-label").forEach((el, i) => {
+      if (steps[i]) el.textContent = this.t(steps[i]);
+    });
+    const en = this.isEn();
+    const virtuesZh = [
+      "勤劳", "善良", "坚强", "幽默", "温柔", "智慧", "慷慨", "敬业", "乐观", "虔诚",
+    ];
+    const virtuesEn = [
+      "Diligent", "Kind", "Resilient", "Humorous", "Gentle", "Wise", "Generous",
+      "Dedicated", "Optimistic", "Devout",
+    ];
+    document.querySelectorAll("#virtue-tags .virtue-tag").forEach((el, i) => {
+      el.textContent = en ? virtuesEn[i] : virtuesZh[i];
+    });
+    const gender = document.getElementById("obit-gender");
+    if (gender && gender.options.length >= 2) {
+      gender.options[0].text = en ? "Male" : "男";
+      gender.options[1].text = en ? "Female" : "女";
+    }
+  },
+
+  applyPlanningHero() {
+    const hero = document.querySelector("#page-planning .planning-hero");
+    if (hero) {
+      const h1 = hero.querySelector("h1");
+      const p = hero.querySelector("p");
+      if (h1) h1.textContent = this.t("planning.title");
+      if (p) p.textContent = this.t("planning.sub");
+    }
+    const prog = document.querySelector("#page-planning .progress-label");
+    if (prog) prog.textContent = this.t("planning.progress");
+    if (typeof renderPlanning === "function") {
+      renderPlanning();
+      if (window.MemorialContent) {
+        MemorialContent.syncPlanningUI(
+          MemorialContent.loadPlanningState()
+        );
+      }
+    }
+  },
+
+  applyThemesHero() {
+    const hero = document.querySelector("#page-themes .themes-hero");
+    if (hero) {
+      const h1 = hero.querySelector("h1");
+      const p = hero.querySelector("p");
+      if (h1) h1.textContent = this.t("themes.title");
+      if (p) p.textContent = this.t("themes.sub");
+    }
+    const themeFilters = [
+      "themes.filter.all",
+      "themes.filter.ink",
+      "themes.filter.floral",
+      "themes.filter.modern",
+      "themes.filter.seasonal",
+    ];
+    document.querySelectorAll("#page-themes .themes-filter .filter-tag").forEach((el, i) => {
+      if (themeFilters[i]) el.textContent = this.t(themeFilters[i]);
+    });
+    if (window.MemorialContent?.renderThemesGrid) {
+      MemorialContent.renderThemesGrid(
+        MemorialStore?.get(MemorialCore?.slug)?.themeId || "ink-default"
+      );
+    }
+  },
+
+  applyQrPage() {
+    const hero = document.querySelector("#page-qr .qr-hero");
+    if (!hero) return;
+    const h1 = hero.querySelector("h1");
+    const p = hero.querySelector("p");
+    if (h1) h1.textContent = this.t("qr.title");
+    if (p) p.textContent = this.t("qr.sub");
+    const demoLabel = hero.querySelector(".qr-demo-label");
+    if (demoLabel) demoLabel.textContent = this.isEn() ? "Sample" : "示意样品";
+    const feats = this.isEn()
+      ? [
+          ["Scan to visit", "Opens the memorial instantly—no search"],
+          ["Weatherproof", "Outdoor-grade, fade-resistant materials"],
+          ["Permanent link", "The URL stays valid for generations"],
+          ["Custom engraving", "Name, years, and verse laser-etched"],
+          ["Nationwide shipping", "Gift box, 7–15 business days"],
+          ["Easy install", "Mounting kit included"],
+        ]
+      : [
+          ["即扫即达", "扫一扫直接进入纪念馆，无需搜索"],
+          ["防水防腐", "户外专用材质，历经风雨永不褪色"],
+          ["永久有效", "链接永不失效，记忆永续传承"],
+          ["定制刻字", "姓名、年份、诗句均可激光雕刻"],
+          ["全国包邮", "精美礼盒包装，7-15个工作日送达"],
+          ["专业安装", "附带安装工具包，简单固定即可"],
+        ];
+    hero.querySelectorAll(".qr-feat").forEach((el, i) => {
+      if (!feats[i]) return;
+      const title = el.querySelector(".qr-feat-title");
+      const desc = el.querySelector(".qr-feat-desc");
+      if (title) title.textContent = feats[i][0];
+      if (desc) desc.textContent = feats[i][1];
+    });
+    const qrSec = document.querySelector("#page-qr .qr-products .section-title");
+    const qrSub = document.querySelector("#page-qr .qr-products .section-sub");
+    if (qrSec) qrSec.textContent = this.isEn() ? "Plaque products" : "铭牌产品";
+    if (qrSub) qrSub.textContent = this.isEn() ? "Three materials" : "三款材质，各有千秋";
+    const howTitle = document.querySelector("#page-qr .qr-how .section-title");
+    const howSub = document.querySelector("#page-qr .qr-how .section-sub");
+    if (howTitle) howTitle.textContent = this.isEn() ? "How it works" : "使用流程";
+    if (howSub) howSub.textContent = this.isEn() ? "Three simple steps" : "三步完成，简单明了";
   },
 
   applyFeatureCards() {
@@ -896,6 +1212,12 @@ window.MemorialI18n = {
     }
     if (window.MemorialContent?.loadHomeMemorials) {
       MemorialContent.loadHomeMemorials(!!window.MemorialCore?.useApi);
+    }
+    if (typeof renderPlanning === "function" && document.getElementById("planning-cats")) {
+      renderPlanning();
+      if (window.MemorialContent) {
+        MemorialContent.syncPlanningUI(MemorialContent.loadPlanningState());
+      }
     }
     if (window.MemorialCore?.refreshMemorialUI) {
       MemorialCore.refreshMemorialUI();

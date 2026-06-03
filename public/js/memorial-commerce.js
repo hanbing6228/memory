@@ -134,7 +134,7 @@ window.MemorialCommerce = {
           <div class="qr-prod-info">
             <div class="qr-prod-name">${MemorialStore.escapeHtml(p.name)}</div>
             <div class="qr-prod-desc">${MemorialStore.escapeHtml(p.description || "")}</div>
-            <div class="qr-prod-price">¥${p.price}<button class="qr-prod-btn" onclick="event.stopPropagation();MemorialCommerce.addBySlug('${MemorialStore.escapeHtml(p.slug)}')">加入购物车</button></div>
+            <div class="qr-prod-price">¥${p.price}<button class="qr-prod-btn" onclick="event.stopPropagation();MemorialCommerce.addBySlug('${MemorialStore.escapeHtml(p.slug)}')">${window.MemorialI18n?.t("shop.addToCart") || "加入购物车"}</button></div>
           </div>
         </div>`;
         })
