@@ -550,6 +550,7 @@ window.MemorialI18n = {
       const btn = document.getElementById("lang-toggle");
       if (!btn || btn.dataset.i18nBound === "1") return;
       btn.dataset.i18nBound = "1";
+      btn.removeAttribute("onclick");
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
