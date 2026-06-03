@@ -863,12 +863,12 @@ body.lang-en .nav-link,body.lang-en .nav-btn,body.lang-en .nav-auth-btn,body.lan
     <!-- GRIEF -->
     <div class="tab-content" id="tab-grief-li">
       <div class="articles-filter">
-        <div class="filter-tag active" onclick="filterArticles(this,'all')">全部</div>
-        <div class="filter-tag" onclick="filterArticles(this,'grief')">悲伤疗愈</div>
-        <div class="filter-tag" onclick="filterArticles(this,'ritual')">丧礼礼仪</div>
-        <div class="filter-tag" onclick="filterArticles(this,'memory')">守护记忆</div>
-        <div class="filter-tag" onclick="filterArticles(this,'child')">与孩子谈生死</div>
-        <div class="filter-tag" onclick="filterArticles(this,'legal')">身后事务</div>
+        <div class="filter-tag active" data-filter-cat="all" onclick="filterArticles(this,'all')">全部</div>
+        <div class="filter-tag" data-filter-cat="grief" onclick="filterArticles(this,'grief')">悲伤疗愈</div>
+        <div class="filter-tag" data-filter-cat="ritual" onclick="filterArticles(this,'ritual')">丧礼礼仪</div>
+        <div class="filter-tag" data-filter-cat="memory" onclick="filterArticles(this,'memory')">守护记忆</div>
+        <div class="filter-tag" data-filter-cat="child" onclick="filterArticles(this,'child')">与孩子谈生死</div>
+        <div class="filter-tag" data-filter-cat="legal" onclick="filterArticles(this,'legal')">身后事务</div>
       </div>
       <div class="articles-grid" id="articles-li"></div>
     </div>

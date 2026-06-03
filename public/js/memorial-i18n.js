@@ -940,12 +940,16 @@ window.MemorialI18n = {
       child: "guides.filter.child",
       legal: "guides.filter.legal",
     };
-    document
-      .querySelectorAll("#guides-articles-filter .filter-tag")
-      .forEach((el) => {
+    const applyFilter = (root) => {
+      if (!root) return;
+      root.querySelectorAll(".filter-tag").forEach((el, i) => {
         const cat = el.getAttribute("data-filter-cat");
-        if (cat && map[cat]) el.textContent = this.t(map[cat]);
+        const key = cat && map[cat] ? map[cat] : Object.values(map)[i];
+        if (key) el.textContent = this.t(key);
       });
+    };
+    applyFilter(document.getElementById("guides-articles-filter"));
+    applyFilter(document.querySelector("#tab-grief-li .articles-filter"));
   },
 
   applyObituaryPage() {
